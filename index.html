@@ -392,6 +392,53 @@
                 </div>
             </div>
 
+            <!-- Migraine Calendar -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <h3 id="migraine-calendar-title" class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <span class="mr-3 text-purple-600">📅</span>
+                    Migraine Calendar
+                </h3>
+                
+                <div class="flex items-center justify-between mb-6">
+                    <button id="prev-month" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <span class="text-xl">←</span>
+                    </button>
+                    <h4 id="calendar-month-year" class="text-lg font-semibold text-gray-800"></h4>
+                    <button id="next-month" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <span class="text-xl">→</span>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-1 mb-4">
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Sun</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Mon</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Tue</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Wed</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Thu</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Fri</div>
+                    <div class="text-center text-sm font-medium text-gray-500 p-2">Sat</div>
+                </div>
+                
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+                    <!-- Calendar days will be populated here -->
+                </div>
+                
+                <div class="mt-6 flex items-center justify-center space-x-6 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                        <span>Severe (7-10)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                        <span>Moderate (4-6)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                        <span>Mild (1-3)</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Doctor Report Section -->
             <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
                 <h3 id="doctor-report-title" class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -1454,6 +1501,9 @@
             // Update this month count
             document.getElementById('this-month-count').textContent = thisMonthData.length;
             
+            // Also update analytics when dashboard updates
+            updateAnalytics();
+            
             // Update trend
             const trendDiff = thisMonthData.length - lastMonthData.length;
             const trendIcon = document.getElementById('trend-icon');
@@ -1521,6 +1571,94 @@
             const daysSince = getDaysSinceLast();
             const migraineFreeElement = document.getElementById('migraine-free-text');
             migraineFreeElement.textContent = `${daysSince} ${t('migraineFree')}`;
+        }
+
+        // Update analytics in real-time
+        function updateAnalytics() {
+            // Calculate medication effectiveness from actual data
+            const medicationStats = {};
+            migraines.forEach(m => {
+                if (m.medications && m.effectiveness !== null && m.effectiveness !== undefined) {
+                    m.medications.forEach(med => {
+                        if (!medicationStats[med]) {
+                            medicationStats[med] = { total: 0, count: 0, effectiveness: 0 };
+                        }
+                        medicationStats[med].total += m.effectiveness;
+                        medicationStats[med].count += 1;
+                        medicationStats[med].effectiveness = Math.round(medicationStats[med].total / medicationStats[med].count);
+                    });
+                }
+            });
+
+            // Calculate relief method effectiveness
+            const reliefStats = {};
+            migraines.forEach(m => {
+                if (m.reliefMethods && m.effectiveness !== null && m.effectiveness !== undefined) {
+                    m.reliefMethods.forEach(relief => {
+                        if (!reliefStats[relief]) {
+                            reliefStats[relief] = { total: 0, count: 0, effectiveness: 0 };
+                        }
+                        reliefStats[relief].total += m.effectiveness;
+                        reliefStats[relief].count += 1;
+                        reliefStats[relief].effectiveness = Math.round(reliefStats[relief].total / reliefStats[relief].count);
+                    });
+                }
+            });
+
+            // Update medication effectiveness display
+            const medicationsContainer = document.querySelector('#analytics-view .space-y-4');
+            if (medicationsContainer) {
+                const medicationEntries = Object.entries(medicationStats);
+                if (medicationEntries.length > 0) {
+                    medicationsContainer.innerHTML = medicationEntries.map(([med, stats]) => {
+                        const effectivenessClass = stats.effectiveness >= 70 ? 'green' : stats.effectiveness >= 50 ? 'yellow' : 'red';
+                        const stars = '★'.repeat(Math.ceil(stats.effectiveness / 20)) + '☆'.repeat(5 - Math.ceil(stats.effectiveness / 20));
+                        const effectivenessText = stats.effectiveness >= 70 ? 'Highly Effective' : stats.effectiveness >= 50 ? 'Moderately Effective' : 'Less Effective';
+                        
+                        return `
+                            <div class="bg-${effectivenessClass}-50 border border-${effectivenessClass}-200 rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold text-${effectivenessClass}-600">${stats.effectiveness}%</div>
+                                <div class="text-sm font-medium text-gray-700">${med}</div>
+                                <div class="text-xs text-gray-500">Used ${stats.count} times</div>
+                                <div class="text-xs text-${effectivenessClass}-600 mt-1">${stars} ${effectivenessText}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    medicationsContainer.innerHTML = `
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+                            <div class="text-gray-500">No medication data yet</div>
+                            <div class="text-xs text-gray-400">Start logging medications to see effectiveness</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Update non-pharmacological interventions
+            const reliefContainer = document.querySelector('#analytics-view .space-y-3');
+            if (reliefContainer) {
+                const reliefEntries = Object.entries(reliefStats);
+                if (reliefEntries.length > 0) {
+                    reliefContainer.innerHTML = reliefEntries.map(([relief, stats]) => {
+                        const stars = '★'.repeat(Math.ceil(stats.effectiveness / 20)) + '☆'.repeat(5 - Math.ceil(stats.effectiveness / 20));
+                        const reliefName = relief.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        
+                        return `
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">'${reliefName}' provided relief in ${stats.effectiveness}% of cases when used (${stats.count}/${stats.count} times).</span>
+                                <span class="text-green-600 font-semibold">${stars}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    reliefContainer.innerHTML = `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">No relief method data yet</span>
+                            <span class="text-gray-400">☆☆☆☆☆</span>
+                        </div>
+                    `;
+                }
+            }
         }
 
         // Update recent entries list
@@ -1775,6 +1913,86 @@ Your Patient`;
             window.location.href = mailtoLink;
         }
 
+        // Calendar functionality
+        let currentCalendarDate = new Date();
+
+        function updateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // Update month/year display
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Get migraines for this month
+            const monthStart = new Date(year, month, 1);
+            const monthEnd = new Date(year, month + 1, 0);
+            const monthMigraines = migraines.filter(m => 
+                m.startTime >= monthStart && m.startTime <= monthEnd
+            );
+            
+            // Create calendar grid
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'h-12 p-1';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'h-12 p-1 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-sm relative cursor-pointer hover:bg-gray-50 transition-colors';
+                
+                // Check if this day has migraines
+                const dayMigraines = monthMigraines.filter(m => m.startTime.getDate() === day);
+                
+                if (dayMigraines.length > 0) {
+                    // Find highest pain level for this day
+                    const maxPain = Math.max(...dayMigraines.map(m => m.painLevel));
+                    let bgColor = 'bg-green-500';
+                    if (maxPain >= 7) bgColor = 'bg-red-500';
+                    else if (maxPain >= 4) bgColor = 'bg-yellow-500';
+                    
+                    dayElement.innerHTML = `
+                        <div class="text-gray-900 font-medium">${day}</div>
+                        <div class="w-2 h-2 ${bgColor} rounded-full absolute bottom-1"></div>
+                    `;
+                    
+                    // Add tooltip on hover
+                    dayElement.title = `${dayMigraines.length} migraine${dayMigraines.length > 1 ? 's' : ''} - Max pain: ${maxPain}/10`;
+                } else {
+                    dayElement.innerHTML = `<div class="text-gray-600">${day}</div>`;
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function setupCalendar() {
+            document.getElementById('prev-month').addEventListener('click', () => {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+                updateCalendar();
+            });
+            
+            document.getElementById('next-month').addEventListener('click', () => {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+                updateCalendar();
+            });
+            
+            updateCalendar();
+        }
+
         // Export data as CSV
         function exportDataAsCSV() {
             if (migraines.length === 0) {
@@ -1899,9 +2117,10 @@ Your Patient`;
                     status: 'quick'
                 });
 
-                // Reset form
+                // Reset form and update calendar
                 resetQuickForm();
                 hideModal('quick-log-modal');
+                updateCalendar();
                 alert(t('quickEntrySaved'));
             });
 
@@ -1971,9 +2190,10 @@ Your Patient`;
                     status: 'complete'
                 });
 
-                // Reset form
+                // Reset form and update calendar
                 resetDetailedForm();
                 hideModal('detailed-log-modal');
+                updateCalendar();
                 alert(t('detailedEntrySaved'));
             });
 
@@ -1985,6 +2205,9 @@ Your Patient`;
             // Set up selection buttons and sliders
             setupSelectionButtons();
             setupPainSliders();
+            
+            // Set up calendar
+            setupCalendar();
 
             // Close modals when clicking backdrop
             document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
@@ -2070,5 +2293,5 @@ Your Patient`;
         // Start the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969841a855bec230',t:'MTc1NDI0OTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96984954f1b587fe',t:'MTc1NDI1MDAyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
