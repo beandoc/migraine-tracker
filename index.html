@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migraine Tracker - माइग्रेन ट्रैकर</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .pain-slider {
+            background: linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hindi-font {
+            font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo } = React;
+
+        // Language translations
+        const translations = {
+            en: {
+                appTitle: "Migraine Tracker",
+                dashboard: "Dashboard",
+                analytics: "Analytics",
+                settings: "Settings",
+                welcomeBack: "Welcome back! 👋",
+                welcomeSubtitle: "Take control of your migraines with smart tracking and insights",
+                migraineFree: "days migraine-free",
+                lastEntry: "Last entry: 2 days ago",
+                thisMonth: "This Month",
+                avgIntensity: "Avg Intensity",
+                topTrigger: "Top Trigger",
+                fromLastMonth: "from last month",
+                mildSeverity: "Mild severity",
+                moderateSeverity: "Moderate severity",
+                highSeverity: "High severity",
+                correlation: "correlation",
+                noData: "No data yet",
+                havingMigraine: "Having a migraine right now?",
+                chooseMigraine: "Choose how you want to log your migraine episode",
+                quickLog: "Quick Log (1 min)",
+                detailedEntry: "Detailed Entry",
+                quickTime: "Quick: 1 minute",
+                detailedTime: "Detailed: 3-5 minutes",
+                recentEntries: "Recent Entries",
+                recentSubtitle: "Your latest migraine logs and patterns",
+                noEntries: "No entries yet. Log your first headache above!",
+                painLevel: "Pain Level",
+                complete: "Complete",
+                incomplete: "Incomplete",
+                location: "Location",
+                quickLogTitle: "Quick Log",
+                quickLogSubtitle: "Log the essentials now, add details later",
+                whenStart: "When did it start?",
+                now: "Now",
+                minsAgo: "mins ago",
+                painIntensity: "Pain Intensity",
+                mild: "Mild",
+                moderate: "Moderate",
+                severe: "Severe",
+                worst: "Worst",
+                cancel: "Cancel",
+                saveNow: "Save Now",
+                detailedEntryTitle: "Detailed Entry",
+                detailedEntrySubtitle: "Complete migraine log with all details",
+                painLocation: "Pain Location",
+                possibleTriggers: "Possible Triggers",
+                associatedSymptoms: "Associated Symptoms",
+                saveCompleteEntry: "Save Complete Entry",
+                // Pain locations
+                leftSide: "Left Side",
+                rightSide: "Right Side",
+                bothSides: "Both Sides",
+                forehead: "Forehead",
+                backHead: "Back of Head",
+                topHead: "Top of Head",
+                // Triggers
+                workStress: "Work Stress",
+                lackSleep: "Lack of Sleep",
+                weatherChange: "Weather Change",
+                brightLights: "Bright Lights",
+                loudSounds: "Loud Sounds",
+                certainFoods: "Certain Foods",
+                hormonal: "Hormonal Changes",
+                dehydration: "Dehydration",
+                // Symptoms
+                nausea: "Nausea",
+                vomiting: "Vomiting",
+                lightSensitivity: "Light Sensitivity",
+                soundSensitivity: "Sound Sensitivity",
+                dizziness: "Dizziness",
+                fatigue: "Fatigue",
+                confusion: "Confusion",
+                moodChanges: "Mood Changes",
+                // Analytics
+                analyticsTitle: "Analytics & Insights",
+                analyticsSubtitle: "Understand your migraine patterns and triggers",
+                treatmentEffectiveness: "Treatment Effectiveness Report",
+                medications: "Medications",
+                nonPharmacological: "Non-Pharmacological Interventions",
+                highlyEffective: "Highly Effective",
+                moderatelyEffective: "Moderately Effective",
+                usedTimes: "Used {count} times",
+                providedRelief: "provided relief in {percent}% of cases when used ({used}/{total} times).",
+                doctorReport: "Exportable Doctor's Report",
+                doctorReportDesc: "Generate a comprehensive, professional report for your healthcare provider that includes all your migraine data, patterns, and treatment responses.",
+                reportIncludes: "Report will include:",
+                generateReport: "Generate PDF Report",
+                emailDoctor: "Email to Doctor",
+                // Settings
+                settingsTitle: "Settings & Personalization",
+                settingsSubtitle: "Customize your migraine tracking experience",
+                myMedications: "My Medications",
+                acuteMedications: "Acute/Abortive Medications",
+                remove: "Remove",
+                addMedication: "Add Medication",
+                // Alerts
+                quickEntrySaved: "Quick entry saved! You can add more details later when you feel better.",
+                detailedEntrySaved: "Detailed migraine entry saved successfully!",
+                reportGenerated: "Report generated and downloaded!",
+                noDataReport: "No migraine data available to generate a report. Please log some migraines first.",
+                enterDoctorEmail: "Enter your doctor's email address:",
+                language: "Language"
+            },
+            hi: {
+                appTitle: "माइग्रेन ट्रैकर",
+                dashboard: "डैशबोर्ड",
+                analytics: "विश्लेषण",
+                settings: "सेटिंग्स",
+                welcomeBack: "वापस स्वागत है! 👋",
+                welcomeSubtitle: "स्मार्ट ट्रैकिंग और अंतर्दृष्टि के साथ अपने माइग्रेन को नियंत्रित करें",
+                migraineFree: "दिन माइग्रेन-मुक्त",
+                lastEntry: "अंतिम प्रविष्टि: 2 दिन पहले",
+                thisMonth: "इस महीने",
+                avgIntensity: "औसत तीव्रता",
+                topTrigger: "मुख्य कारण",
+                fromLastMonth: "पिछले महीने से",
+                mildSeverity: "हल्की गंभीरता",
+                moderateSeverity: "मध्यम गंभीरता",
+                highSeverity: "उच्च गंभीरता",
+                correlation: "संबंध",
+                noData: "अभी तक कोई डेटा नहीं",
+                havingMigraine: "अभी माइग्रेन हो रहा है?",
+                chooseMigraine: "अपने माइग्रेन एपिसोड को लॉग करने का तरीका चुनें",
+                quickLog: "त्वरित लॉग (1 मिनट)",
+                detailedEntry: "विस्तृत प्रविष्टि",
+                quickTime: "त्वरित: 1 मिनट",
+                detailedTime: "विस्तृत: 3-5 मिनट",
+                recentEntries: "हाल की प्रविष्टियां",
+                recentSubtitle: "आपके नवीनतम माइग्रेन लॉग और पैटर्न",
+                noEntries: "अभी तक कोई प्रविष्टि नहीं। ऊपर अपना पहला सिरदर्द लॉग करें!",
+                painLevel: "दर्द का स्तर",
+                complete: "पूर्ण",
+                incomplete: "अधूरा",
+                location: "स्थान",
+                quickLogTitle: "त्वरित लॉग",
+                quickLogSubtitle: "अभी आवश्यक बातें लॉग करें, विवरण बाद में जोड़ें",
+                whenStart: "यह कब शुरू हुआ?",
+                now: "अभी",
+                minsAgo: "मिनट पहले",
+                painIntensity: "दर्द की तीव्रता",
+                mild: "हल्का",
+                moderate: "मध्यम",
+                severe: "गंभीर",
+                worst: "सबसे खराब",
+                cancel: "रद्द करें",
+                saveNow: "अभी सेव करें",
+                detailedEntryTitle: "विस्तृत प्रविष्टि",
+                detailedEntrySubtitle: "सभी विवरणों के साथ पूर्ण माइग्रेन लॉग",
+                painLocation: "दर्द का स्थान",
+                possibleTriggers: "संभावित कारण",
+                associatedSymptoms: "संबंधित लक्षण",
+                saveCompleteEntry: "पूर्ण प्रविष्टि सेव करें",
+                // Pain locations
+                leftSide: "बाईं ओर",
+                rightSide: "दाईं ओर",
+                bothSides: "दोनों ओर",
+                forehead: "माथा",
+                backHead: "सिर का पिछला हिस्सा",
+                topHead: "सिर का ऊपरी हिस्सा",
+                // Triggers
+                workStress: "काम का तनाव",
+                lackSleep: "नींद की कमी",
+                weatherChange: "मौसम में बदलाव",
+                brightLights: "तेज रोशनी",
+                loudSounds: "तेज आवाज",
+                certainFoods: "कुछ खाद्य पदार्थ",
+                hormonal: "हार्मोनल बदलाव",
+                dehydration: "निर्जलीकरण",
+                // Symptoms
+                nausea: "मतली",
+                vomiting: "उल्टी",
+                lightSensitivity: "प्रकाश संवेदनशीलता",
+                soundSensitivity: "ध्वनि संवेदनशीलता",
+                dizziness: "चक्कर आना",
+                fatigue: "थकान",
+                confusion: "भ्रम",
+                moodChanges: "मूड में बदलाव",
+                // Analytics
+                analyticsTitle: "विश्लेषण और अंतर्दृष्टि",
+                analyticsSubtitle: "अपने माइग्रेन पैटर्न और कारणों को समझें",
+                treatmentEffectiveness: "उपचार प्रभावशीलता रिपोर्ट",
+                medications: "दवाएं",
+                nonPharmacological: "गैर-दवा हस्तक्षेप",
+                highlyEffective: "अत्यधिक प्रभावी",
+                moderatelyEffective: "मध्यम प्रभावी",
+                usedTimes: "{count} बार उपयोग किया गया",
+                providedRelief: "ने {percent}% मामलों में राहत प्रदान की जब उपयोग किया गया ({used}/{total} बार)।",
+                doctorReport: "निर्यात योग्य डॉक्टर की रिपोर्ट",
+                doctorReportDesc: "अपने स्वास्थ्य सेवा प्रदाता के लिए एक व्यापक, पेशेवर रिपोर्ट तैयार करें जिसमें आपके सभी माइग्रेन डेटा, पैटर्न और उपचार प्रतिक्रियाएं शामिल हों।",
+                reportIncludes: "रिपोर्ट में शामिल होगा:",
+                generateReport: "पीडीएफ रिपोर्ट तैयार करें",
+                emailDoctor: "डॉक्टर को ईमेल करें",
+                // Settings
+                settingsTitle: "सेटिंग्स और व्यक्तिगतकरण",
+                settingsSubtitle: "अपने माइग्रेन ट्रैकिंग अनुभव को अनुकूलित करें",
+                myMedications: "मेरी दवाएं",
+                acuteMedications: "तीव्र/रोकथाम दवाएं",
+                remove: "हटाएं",
+                addMedication: "दवा जोड़ें",
+                // Alerts
+                quickEntrySaved: "त्वरित प्रविष्टि सेव हो गई! जब आप बेहतर महसूस करें तो अधिक विवरण जोड़ सकते हैं।",
+                detailedEntrySaved: "विस्तृत माइग्रेन प्रविष्टि सफलतापूर्वक सेव हो गई!",
+                reportGenerated: "रिपोर्ट तैयार और डाउनलोड हो गई!",
+                noDataReport: "रिपोर्ट तैयार करने के लिए कोई माइग्रेन डेटा उपलब्ध नहीं है। कृपया पहले कुछ माइग्रेन लॉग करें।",
+                enterDoctorEmail: "अपने डॉक्टर का ईमेल पता दर्ज करें:",
+                language: "भाषा"
+            }
+        };
+
+        // Custom Hooks
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    return initialValue;
+                }
+            });
+
+            const setValue = (value) => {
+                try {
+                    setStoredValue(value);
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                } catch (error) {
+                    console.error('Error saving to localStorage:', error);
+                }
+            };
+
+            return [storedValue, setValue];
+        };
+
+        const useLanguage = () => {
+            const [language, setLanguage] = useLocalStorage('language', 'en');
+            const t = (key, params = {}) => {
+                let text = translations[language][key] || translations.en[key] || key;
+                Object.keys(params).forEach(param => {
+                    text = text.replace(`{${param}}`, params[param]);
+                });
+                return text;
+            };
+            return { language, setLanguage, t };
+        };
+
+        const useMigraines = () => {
+            const [migraines, setMigraines] = useLocalStorage('migraines', []);
+
+            // Initialize with sample data if empty
+            useEffect(() => {
+                if (migraines.length === 0) {
+                    const sampleData = [
+                        {
+                            id: '1',
+                            timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                            startTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+                            painLevel: 7,
+                            finalPainLevel: 2,
+                            outcome: 2,
+                            status: 'complete',
+                            locations: ['left_side', 'forehead'],
+                            triggers: ['work_stress', 'lack_sleep'],
+                            symptoms: ['nausea', 'photophobia'],
+                            medicationsTaken: [{name: 'sumatriptan', dosage: '50mg', timestamp: new Date().toISOString()}],
+                            reliefMeasures: ['dark_room', 'cold_pack'],
+                            completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: '2',
+                            timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+                            startTime: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+                            painLevel: 5,
+                            finalPainLevel: 3,
+                            outcome: 3,
+                            status: 'complete',
+                            locations: ['both_sides'],
+                            triggers: ['weather_change'],
+                            symptoms: ['dizziness'],
+                            medicationsTaken: [{name: 'ibuprofen', dosage: '400mg', timestamp: new Date().toISOString()}],
+                            reliefMeasures: ['hydration'],
+                            completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ];
+                    setMigraines(sampleData);
+                }
+            }, [migraines.length, setMigraines]);
+
+            const addMigraine = useCallback((migraine) => {
+                const newMigraine = {
+                    ...migraine,
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString()
+                };
+                setMigraines(prev => [...prev, newMigraine]);
+            }, [setMigraines]);
+
+            const updateMigraine = useCallback((id, updates) => {
+                setMigraines(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+            }, [setMigraines]);
+
+            return { migraines, addMigraine, updateMigraine };
+        };
+
+        // Simple icon components
+        const Brain = () => <span className="text-2xl">🧠</span>;
+        const Plus = ({ className }) => <span className={`inline-block ${className}`}>+</span>;
+        const BarChart3 = ({ className }) => <span className={`inline-block ${className}`}>📊</span>;
+        const Settings = ({ className }) => <span className={`inline-block ${className}`}>⚙️</span>;
+        const Calendar = ({ className }) => <span className={`inline-block ${className}`}>📅</span>;
+        const Download = ({ className }) => <span className={`inline-block ${className}`}>📥</span>;
+        const Mail = ({ className }) => <span className={`inline-block ${className}`}>📧</span>;
+        const TrendingUp = ({ className }) => <span className={`inline-block ${className}`}>📈</span>;
+        const AlertTriangle = ({ className }) => <span className={`inline-block ${className}`}>⚠️</span>;
+        const Clock = ({ className }) => <span className={`inline-block ${className}`}>🕐</span>;
+        const Target = ({ className }) => <span className={`inline-block ${className}`}>🎯</span>;
+        const Globe = ({ className }) => <span className={`inline-block ${className}`}>🌐</span>;
+
+        // Components
+        const LanguageToggle = ({ language, setLanguage }) => (
+            <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4 text-gray-600" />
+                <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="bg-transparent border-none text-sm text-gray-600 focus:outline-none cursor-pointer"
+                >
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी</option>
+                </select>
+            </div>
+        );
+
+        const Navigation = ({ activeView, setActiveView, language, setLanguage, t }) => (
+            <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                <Brain />
+                            </div>
+                            <h1 className={`text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent ${language === 'hi' ? 'hindi-font' : ''}`}>
+                                {t('appTitle')}
+                            </h1>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <LanguageToggle language={language} setLanguage={setLanguage} />
+                            <div className="flex space-x-1">
+                                {[
+                                    { id: 'dashboard', label: t('dashboard'), icon: BarChart3 },
+                                    { id: 'analytics', label: t('analytics'), icon: TrendingUp },
+                                    { id: 'settings', label: t('settings'), icon: Settings }
+                                ].map(({ id, label, icon: Icon }) => (
+                                    <button
+                                        key={id}
+                                        onClick={() => setActiveView(id)}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${language === 'hi' ? 'hindi-font' : ''} ${
+                                            activeView === id
+                                                ? 'bg-purple-100 text-purple-700 shadow-sm'
+                                                : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                                        }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        <span className="hidden sm:inline">{label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+
+        const StatCard = ({ title, value, subtitle, icon: Icon, color = 'purple', trend, language }) => (
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover animate-fade-in">
+                <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                        <p className={`text-sm font-medium text-gray-600 mb-1 ${language === 'hi' ? 'hindi-font' : ''}`}>{title}</p>
+                        <p className="text-3xl font-bold text-gray-900">{value}</p>
+                        {subtitle && (
+                            <p className={`text-xs mt-2 flex items-center ${language === 'hi' ? 'hindi-font' : ''} ${
+                                trend === 'up' ? 'text-red-600' : trend === 'down' ? 'text-green-600' : 'text-gray-600'
+                            }`}>
+                                {trend && (
+                                    <TrendingUp className={`w-3 h-3 mr-1 ${trend === 'down' ? 'rotate-180' : ''}`} />
+                                )}
+                                {subtitle}
+                            </p>
+                        )}
+                    </div>
+                    <div className={`w-12 h-12 bg-gradient-to-br from-${color}-500 to-${color}-600 rounded-xl flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                    </div>
+                </div>
+            </div>
+        );
+
+        const DetailedEntryModal = ({ isOpen, onClose, onSave, t, language }) => {
+            const [formData, setFormData] = useState({
+                startTime: new Date(),
+                painLevel: 5,
+                locations: [],
+                triggers: [],
+                symptoms: [],
+                medications: [],
+                reliefMeasures: []
+            });
+
+            if (!isOpen) return null;
+
+            const handleSave = () => {
+                onSave({
+                    ...formData,
+                    status: 'complete'
+                });
+                onClose();
+            };
+
+            const toggleSelection = (category, item) => {
+                setFormData(prev => ({
+                    ...prev,
+                    [category]: prev[category].includes(item)
+                        ? prev[category].filter(i => i !== item)
+                        : [...prev[category], item]
+                }));
+            };
+
+            const locationOptions = [
+                { id: 'left_side', label: t('leftSide') },
+                { id: 'right_side', label: t('rightSide') },
+                { id: 'both_sides', label: t('bothSides') },
+                { id: 'forehead', label: t('forehead') },
+                { id: 'back_head', label: t('backHead') },
+                { id: 'top_head', label: t('topHead') }
+            ];
+
+            const triggerOptions = [
+                { id: 'work_stress', label: t('workStress') },
+                { id: 'lack_sleep', label: t('lackSleep') },
+                { id: 'weather_change', label: t('weatherChange') },
+                { id: 'bright_lights', label: t('brightLights') },
+                { id: 'loud_sounds', label: t('loudSounds') },
+                { id: 'certain_foods', label: t('certainFoods') },
+                { id: 'hormonal', label: t('hormonal') },
+                { id: 'dehydration', label: t('dehydration') }
+            ];
+
+            const symptomOptions = [
+                { id: 'nausea', label: t('nausea') },
+                { id: 'vomiting', label: t('vomiting') },
+                { id: 'photophobia', label: t('lightSensitivity') },
+                { id: 'phonophobia', label: t('soundSensitivity') },
+                { id: 'dizziness', label: t('dizziness') },
+                { id: 'fatigue', label: t('fatigue') },
+                { id: 'confusion', label: t('confusion') },
+                { id: 'mood_changes', label: t('moodChanges') }
+            ];
+
+            return (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
+                        <div className="sticky top-0 bg-white rounded-t-3xl p-6 border-b border-gray-100">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-2xl">📝</span>
+                                </div>
+                                <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('detailedEntryTitle')}</h2>
+                                <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('detailedEntrySubtitle')}</p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 space-y-8">
+                            {/* Pain Level */}
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painIntensity')}</label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={formData.painLevel}
+                                    onChange={(e) => setFormData(prev => ({...prev, painLevel: parseInt(e.target.value)}))}
+                                    className="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer"
+                                />
+                                <div className="text-center mt-2">
+                                    <span className="text-2xl font-bold text-gray-900">{formData.painLevel}/10</span>
+                                </div>
+                            </div>
+
+                            {/* Location */}
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painLocation')}</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {locationOptions.map(option => (
+                                        <button
+                                            key={option.id}
+                                            onClick={() => toggleSelection('locations', option.id)}
+                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
+                                                formData.locations.includes(option.id)
+                                                    ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Triggers */}
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('possibleTriggers')}</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {triggerOptions.map(option => (
+                                        <button
+                                            key={option.id}
+                                            onClick={() => toggleSelection('triggers', option.id)}
+                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
+                                                formData.triggers.includes(option.id)
+                                                    ? 'bg-orange-100 text-orange-700 ring-2 ring-orange-500'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Symptoms */}
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('associatedSymptoms')}</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {symptomOptions.map(option => (
+                                        <button
+                                            key={option.id}
+                                            onClick={() => toggleSelection('symptoms', option.id)}
+                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
+                                                formData.symptoms.includes(option.id)
+                                                    ? 'bg-red-100 text-red-700 ring-2 ring-red-500'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="sticky bottom-0 bg-white rounded-b-3xl p-6 border-t border-gray-100">
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={onClose}
+                                    className={`flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors ${language === 'hi' ? 'hindi-font' : ''}`}
+                                >
+                                    {t('cancel')}
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className={`flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
+                                >
+                                    {t('saveCompleteEntry')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const QuickLogModal = ({ isOpen, onClose, onSave, t, language }) => {
+            const [painLevel, setPainLevel] = useState(5);
+            const [startTime, setStartTime] = useState('now');
+
+            if (!isOpen) return null;
+
+            const handleSave = () => {
+                const now = new Date();
+                let actualStartTime;
+                
+                switch(startTime) {
+                    case 'now': actualStartTime = now; break;
+                    case '5min': actualStartTime = new Date(now.getTime() - 5 * 60000); break;
+                    case '15min': actualStartTime = new Date(now.getTime() - 15 * 60000); break;
+                    case '30min': actualStartTime = new Date(now.getTime() - 30 * 60000); break;
+                    default: actualStartTime = now;
+                }
+
+                onSave({
+                    startTime: actualStartTime,
+                    painLevel,
+                    status: 'incomplete'
+                });
+                onClose();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-slide-up">
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <AlertTriangle className="w-8 h-8 text-white" />
+                            </div>
+                            <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('quickLogTitle')}</h2>
+                            <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('quickLogSubtitle')}</p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('whenStart')}</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        { value: 'now', label: t('now') },
+                                        { value: '5min', label: `5 ${t('minsAgo')}` },
+                                        { value: '15min', label: `15 ${t('minsAgo')}` },
+                                        { value: '30min', label: `30 ${t('minsAgo')}` }
+                                    ].map(({ value, label }) => (
+                                        <button
+                                            key={value}
+                                            onClick={() => setStartTime(value)}
+                                            className={`py-3 px-4 rounded-xl font-medium transition-all duration-200 ${language === 'hi' ? 'hindi-font' : ''} ${
+                                                startTime === value
+                                                    ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-500'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painIntensity')}</label>
+                                <div className="relative">
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="10"
+                                        value={painLevel}
+                                        onChange={(e) => setPainLevel(parseInt(e.target.value))}
+                                        className="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer"
+                                    />
+                                    <div className={`flex justify-between text-xs text-gray-500 mt-2 ${language === 'hi' ? 'hindi-font' : ''}`}>
+                                        <span>1<br/>{t('mild')}</span>
+                                        <span>4<br/>{t('moderate')}</span>
+                                        <span>7<br/>{t('severe')}</span>
+                                        <span>10<br/>{t('worst')}</span>
+                                    </div>
+                                </div>
+                                <div className="text-center mt-4">
+                                    <span className="text-3xl font-bold text-gray-900">{painLevel}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-3 mt-8">
+                            <button
+                                onClick={onClose}
+                                className={`flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                {t('cancel')}
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className={`flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                {t('saveNow')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Dashboard = ({ migraines, onQuickLog, onDetailedLog, t, language }) => {
+            const stats = useMemo(() => {
+                const now = new Date();
+                const thisMonth = migraines.filter(m => {
+                    const date = new Date(m.startTime);
+                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                });
+
+                const lastMonth = migraines.filter(m => {
+                    const date = new Date(m.startTime);
+                    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    return date.getMonth() === lastMonthDate.getMonth() && date.getFullYear() === lastMonthDate.getFullYear();
+                });
+
+                const avgIntensity = thisMonth.length > 0 
+                    ? (thisMonth.reduce((sum, m) => sum + m.painLevel, 0) / thisMonth.length).toFixed(1)
+                    : '0.0';
+
+                // Calculate top trigger
+                const triggerCounts = {};
+                thisMonth.forEach(migraine => {
+                    if (migraine.triggers) {
+                        migraine.triggers.forEach(trigger => {
+                            triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+                        });
+                    }
+                });
+
+                const topTrigger = Object.entries(triggerCounts)
+                    .sort(([,a], [,b]) => b - a)[0];
+
+                return {
+                    thisMonth: thisMonth.length,
+                    lastMonth: lastMonth.length,
+                    avgIntensity,
+                    topTrigger: topTrigger ? {
+                        name: topTrigger[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        correlation: Math.round((topTrigger[1] / thisMonth.length) * 100)
+                    } : null
+                };
+            }, [migraines]);
+
+            const recentEntries = useMemo(() => migraines.slice(-5).reverse(), [migraines]);
+
+            return (
+                <div className="max-w-7xl mx-auto p-4 space-y-8">
+                    {/* Hero Section */}
+                    <div className="gradient-bg rounded-3xl p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black/20"></div>
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className={`text-4xl font-bold mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('welcomeBack')}</h1>
+                                    <p className={`text-lg text-purple-100 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('welcomeSubtitle')}</p>
+                                    <div className="flex items-center space-x-6 text-sm">
+                                        <div className="flex items-center glass-effect rounded-full px-4 py-2">
+                                            <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                                            <span className={language === 'hi' ? 'hindi-font' : ''}>7 {t('migraineFree')}</span>
+                                        </div>
+                                        <div className="flex items-center glass-effect rounded-full px-4 py-2">
+                                            <Clock className="w-3 h-3 mr-2" />
+                                            <span className={language === 'hi' ? 'hindi-font' : ''}>{t('lastEntry')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="hidden md:block">
+                                    <div className="w-32 h-32 glass-effect rounded-full flex items-center justify-center">
+                                        <Brain />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Decorative elements */}
+                        <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
+                        <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title={t('thisMonth')}
+                            value={stats.thisMonth}
+                            subtitle={`${stats.thisMonth > stats.lastMonth ? '+' : ''}${stats.thisMonth - stats.lastMonth} ${t('fromLastMonth')}`}
+                            icon={Calendar}
+                            color="red"
+                            trend={stats.thisMonth > stats.lastMonth ? 'up' : stats.thisMonth < stats.lastMonth ? 'down' : null}
+                            language={language}
+                        />
+                        <StatCard
+                            title={t('avgIntensity')}
+                            value={stats.avgIntensity}
+                            subtitle={stats.avgIntensity <= 3 ? t('mildSeverity') : stats.avgIntensity <= 6 ? t('moderateSeverity') : t('highSeverity')}
+                            icon={BarChart3}
+                            color="yellow"
+                            language={language}
+                        />
+                        <StatCard
+                            title={t('topTrigger')}
+                            value={stats.topTrigger?.name || t('noData')}
+                            subtitle={stats.topTrigger ? `${stats.topTrigger.correlation}% ${t('correlation')}` : t('noData')}
+                            icon={Target}
+                            color="purple"
+                            language={language}
+                        />
+                    </div>
+
+                    {/* Quick Log Section */}
+                    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 text-center">
+                        <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                            <Plus className="w-10 h-10 text-white text-4xl" />
+                        </div>
+                        <h3 className={`text-2xl font-bold text-gray-900 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('havingMigraine')}</h3>
+                        <p className={`text-gray-600 mb-8 max-w-md mx-auto ${language === 'hi' ? 'hindi-font' : ''}`}>{t('chooseMigraine')}</p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button
+                                onClick={onQuickLog}
+                                className={`bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                <Plus className="w-6 h-6 mr-2" />
+                                {t('quickLog')}
+                            </button>
+                            
+                            <button
+                                onClick={onDetailedLog}
+                                className={`bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                <span className="text-xl mr-2">📝</span>
+                                {t('detailedEntry')}
+                            </button>
+                        </div>
+                        
+                        <div className={`flex items-center justify-center mt-6 text-sm text-gray-500 space-x-6 ${language === 'hi' ? 'hindi-font' : ''}`}>
+                            <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {t('quickTime')}
+                            </div>
+                            <div className="flex items-center">
+                                <span className="text-lg mr-1">⏱️</span>
+                                {t('detailedTime')}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Recent Entries */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                                        <Calendar className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className={`text-xl font-semibold text-gray-900 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('recentEntries')}</h2>
+                                        <p className={`text-sm text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('recentSubtitle')}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                            {recentEntries.length === 0 ? (
+                                <div className="p-8 text-center text-gray-500">
+                                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                    <p className={language === 'hi' ? 'hindi-font' : ''}>{t('noEntries')}</p>
+                                </div>
+                            ) : (
+                                recentEntries.map((entry) => (
+                                    <div key={entry.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-3 mb-2">
+                                                    <span className={`font-semibold text-gray-900 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painLevel')} {entry.painLevel}/10</span>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${language === 'hi' ? 'hindi-font' : ''} ${
+                                                        entry.status === 'complete' 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {entry.status === 'complete' ? t('complete') : t('incomplete')}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    {new Date(entry.startTime).toLocaleDateString()} at {new Date(entry.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </div>
+                                                {entry.locations && (
+                                                    <div className={`text-sm text-gray-500 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>
+                                                        {t('location')}: {entry.locations.join(', ')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Analytics = ({ migraines, t, language }) => {
+            const generateDoctorReport = () => {
+                if (migraines.length === 0) {
+                    alert(t('noDataReport'));
+                    return;
+                }
+
+                const reportContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Migraine Medical Report</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                            .section { margin-bottom: 30px; }
+                            .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>MIGRAINE TRACKER - COMPREHENSIVE MEDICAL REPORT</h1>
+                            <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                        </div>
+                        <div class="section">
+                            <h2>PATIENT SUMMARY</h2>
+                            <p><strong>Total Migraines Recorded:</strong> ${migraines.length}</p>
+                            <p><strong>Average Pain Intensity:</strong> ${(migraines.reduce((sum, m) => sum + m.painLevel, 0) / migraines.length).toFixed(1)}/10</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob([reportContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `migraine-report-${new Date().toISOString().split('T')[0]}.html`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                alert(t('reportGenerated'));
+            };
+
+            const emailReport = () => {
+                const doctorEmail = prompt(t('enterDoctorEmail'), 'doctor@example.com');
+                if (!doctorEmail) return;
+
+                const subject = `Migraine Medical Report - ${new Date().toLocaleDateString()}`;
+                const body = `Dear Healthcare Provider,
+
+Please find my comprehensive migraine report. This data has been collected using a digital migraine tracking application.
+
+MIGRAINE SUMMARY:
+• Total Migraines Recorded: ${migraines.length}
+• Average Pain Intensity: ${(migraines.reduce((sum, m) => sum + m.painLevel, 0) / migraines.length).toFixed(1)}/10
+
+Best regards,
+Your Patient`;
+
+                const mailtoLink = `mailto:${doctorEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
+            };
+
+            return (
+                <div className="max-w-7xl mx-auto p-4 space-y-8">
+                    <div className="text-center mb-8">
+                        <h2 className={`text-3xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('analyticsTitle')}</h2>
+                        <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('analyticsSubtitle')}</p>
+                    </div>
+
+                    {/* Treatment Effectiveness */}
+                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                        <h3 className={`text-xl font-semibold text-gray-900 mb-6 flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
+                            <BarChart3 className="w-6 h-6 mr-3 text-purple-600" />
+                            {t('treatmentEffectiveness')}
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 className={`font-medium text-gray-700 mb-4 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('medications')}</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                                        <div className="text-2xl font-bold text-green-600">75%</div>
+                                        <div className="text-sm font-medium text-gray-700">Sumatriptan 50mg</div>
+                                        <div className={`text-xs text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('usedTimes', {count: 4})}</div>
+                                        <div className={`text-xs text-green-600 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>★★★★☆ {t('highlyEffective')}</div>
+                                    </div>
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                                        <div className="text-2xl font-bold text-yellow-600">50%</div>
+                                        <div className="text-sm font-medium text-gray-700">Ibuprofen 400mg</div>
+                                        <div className={`text-xs text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('usedTimes', {count: 2})}</div>
+                                        <div className={`text-xs text-yellow-600 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>★★★☆☆ {t('moderatelyEffective')}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 className={`font-medium text-gray-700 mb-4 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('nonPharmacological')}</h4>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className={`text-gray-700 ${language === 'hi' ? 'hindi-font' : ''}`}>'Heat Pack' {t('providedRelief', {percent: 100, used: 1, total: 1})}</span>
+                                        <span className="text-green-600 font-semibold">★★★★★</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className={`text-gray-700 ${language === 'hi' ? 'hindi-font' : ''}`}>'Dark Room' {t('providedRelief', {percent: 80, used: 4, total: 5})}</span>
+                                        <span className="text-green-600 font-semibold">★★★★☆</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Doctor Report Section */}
+                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                        <h3 className={`text-xl font-semibold text-gray-900 mb-4 flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
+                            <Download className="w-6 h-6 mr-3 text-purple-600" />
+                            {t('doctorReport')}
+                        </h3>
+                        <p className={`text-gray-600 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('doctorReportDesc')}</p>
+                        
+                        <div className="bg-blue-50 rounded-xl p-6 mb-6">
+                            <h4 className={`font-medium text-blue-800 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('reportIncludes')}</h4>
+                            <ul className={`text-sm text-blue-700 space-y-1 ${language === 'hi' ? 'hindi-font' : ''}`}>
+                                <li>• Migraine frequency and intensity patterns</li>
+                                <li>• Detailed trigger analysis with correlations</li>
+                                <li>• Medication effectiveness ratings</li>
+                                <li>• Hormonal cycle correlations (if applicable)</li>
+                                <li>• Sleep and lifestyle factor analysis</li>
+                                <li>• Visual calendar showing migraine patterns</li>
+                            </ul>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={generateDoctorReport}
+                                className={`bg-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                <Download className="w-5 h-5 mr-2" />
+                                {t('generateReport')}
+                            </button>
+                            <button
+                                onClick={emailReport}
+                                className={`bg-green-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
+                            >
+                                <Mail className="w-5 h-5 mr-2" />
+                                {t('emailDoctor')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsView = ({ t, language }) => (
+            <div className="max-w-4xl mx-auto p-4 space-y-8">
+                <div className="text-center mb-8">
+                    <h2 className={`text-3xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('settingsTitle')}</h2>
+                    <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('settingsSubtitle')}</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <h3 className={`text-xl font-semibold text-gray-900 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('myMedications')}</h3>
+                    
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className={`font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('acuteMedications')}</h4>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                    <span className="font-medium">Sumatriptan 50mg</span>
+                                    <button className={`text-red-500 hover:text-red-700 font-medium ${language === 'hi' ? 'hindi-font' : ''}`}>{t('remove')}</button>
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                    <span className="font-medium">Ibuprofen 400mg</span>
+                                    <button className={`text-red-500 hover:text-red-700 font-medium ${language === 'hi' ? 'hindi-font' : ''}`}>{t('remove')}</button>
+                                </div>
+                            </div>
+                            <button className={`mt-3 text-purple-600 hover:text-purple-800 font-medium flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
+                                <Plus className="w-4 h-4 mr-1" />
+                                {t('addMedication')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component
+        const MigraineTracker = () => {
+            const [activeView, setActiveView] = useState('dashboard');
+            const [showQuickLog, setShowQuickLog] = useState(false);
+            const [showDetailedLog, setShowDetailedLog] = useState(false);
+            const { migraines, addMigraine } = useMigraines();
+            const { language, setLanguage, t } = useLanguage();
+
+            const handleQuickLog = () => setShowQuickLog(true);
+            const handleCloseQuickLog = () => setShowQuickLog(false);
+            const handleSaveQuickLog = (migrainerData) => {
+                addMigraine(migrainerData);
+                alert(t('quickEntrySaved'));
+            };
+
+            const handleDetailedLog = () => setShowDetailedLog(true);
+            const handleCloseDetailedLog = () => setShowDetailedLog(false);
+            const handleSaveDetailedLog = (migrainerData) => {
+                addMigraine(migrainerData);
+                alert(t('detailedEntrySaved'));
+            };
+
+            const renderView = () => {
+                switch (activeView) {
+                    case 'analytics':
+                        return <Analytics migraines={migraines} t={t} language={language} />;
+                    case 'settings':
+                        return <SettingsView t={t} language={language} />;
+                    default:
+                        return <Dashboard migraines={migraines} onQuickLog={handleQuickLog} onDetailedLog={handleDetailedLog} t={t} language={language} />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+                    <Navigation activeView={activeView} setActiveView={setActiveView} language={language} setLanguage={setLanguage} t={t} />
+                    <main className="pb-8">
+                        {renderView()}
+                    </main>
+                    <QuickLogModal
+                        isOpen={showQuickLog}
+                        onClose={handleCloseQuickLog}
+                        onSave={handleSaveQuickLog}
+                        t={t}
+                        language={language}
+                    />
+                    <DetailedEntryModal
+                        isOpen={showDetailedLog}
+                        onClose={handleCloseDetailedLog}
+                        onSave={handleSaveDetailedLog}
+                        t={t}
+                        language={language}
+                    />
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MigraineTracker />);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96982965a13720c5',t:'MTc1NDI0ODcxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
