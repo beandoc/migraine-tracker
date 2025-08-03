@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Migraine Tracker - माइग्रेन ट्रैकर</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -44,15 +42,545 @@
         .hindi-font {
             font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
         }
+        .hidden { display: none !important; }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .nav-button.active {
+            background: rgb(237 233 254);
+            color: rgb(109 40 217);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .nav-button:not(.active) {
+            color: rgb(75 85 99);
+        }
+        .nav-button:not(.active):hover {
+            color: rgb(109 40 217);
+            background: rgb(249 250 251);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgb(243 244 246);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-primary {
+            background: linear-gradient(to right, rgb(239 68 68), rgb(236 72 153));
+            color: white;
+            font-weight: bold;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: scale(1);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, rgb(220 38 38), rgb(219 39 119));
+            transform: scale(1.05);
+        }
+        .btn-secondary {
+            background: linear-gradient(to right, rgb(59 130 246), rgb(147 51 234));
+            color: white;
+            font-weight: bold;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: scale(1);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(to right, rgb(37 99 235), rgb(126 34 206));
+            transform: scale(1.05);
+        }
+        .selection-button {
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            background: rgb(243 244 246);
+            color: rgb(75 85 99);
+        }
+        .selection-button:hover {
+            background: rgb(229 231 235);
+        }
+        .selection-button.selected {
+            background: rgb(219 234 254);
+            color: rgb(29 78 216);
+            box-shadow: 0 0 0 2px rgb(59 130 246);
+        }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div id="root"></div>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                    <h1 id="app-title" class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        Migraine Tracker
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Language Toggle -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-600">🌐</span>
+                        <select id="language-select" class="bg-transparent border-none text-sm text-gray-600 focus:outline-none cursor-pointer">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                        </select>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button id="nav-dashboard" class="nav-button active">
+                            <span>📊</span>
+                            <span class="hidden sm:inline nav-text">Dashboard</span>
+                        </button>
+                        <button id="nav-analytics" class="nav-button">
+                            <span>📈</span>
+                            <span class="hidden sm:inline nav-text">Analytics</span>
+                        </button>
+                        <button id="nav-settings" class="nav-button">
+                            <span>⚙️</span>
+                            <span class="hidden sm:inline nav-text">Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <script type="text/babel">
-        const { useState, useEffect, useCallback, useMemo } = React;
+    <!-- Main Content -->
+    <main class="pb-8">
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="max-w-7xl mx-auto p-4 space-y-8">
+            <!-- Hero Section -->
+            <div class="gradient-bg rounded-3xl p-8 text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-black/20"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 id="welcome-title" class="text-4xl font-bold mb-2">Welcome back! 👋</h1>
+                            <p id="welcome-subtitle" class="text-lg text-purple-100 mb-6">Take control of your migraines with smart tracking and insights</p>
+                            <div class="flex items-center space-x-6 text-sm">
+                                <div class="flex items-center glass-effect rounded-full px-4 py-2">
+                                    <div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                                    <span id="migraine-free-text">7 days migraine-free</span>
+                                </div>
+                                <div class="flex items-center glass-effect rounded-full px-4 py-2">
+                                    <span class="mr-2">🕐</span>
+                                    <span id="last-entry-text">Last entry: 2 days ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="w-32 h-32 glass-effect rounded-full flex items-center justify-center">
+                                <span class="text-6xl">🧠</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
+                <div class="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            </div>
 
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p id="this-month-label" class="text-sm font-medium text-gray-600 mb-1">This Month</p>
+                            <p class="text-3xl font-bold text-gray-900">3</p>
+                            <p id="month-trend" class="text-xs mt-2 flex items-center text-red-600">
+                                <span class="mr-1">📈</span>
+                                +1 from last month
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-white">📅</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p id="avg-intensity-label" class="text-sm font-medium text-gray-600 mb-1">Avg Intensity</p>
+                            <p class="text-3xl font-bold text-gray-900">6.0</p>
+                            <p id="severity-text" class="text-xs mt-2 text-gray-600">Moderate severity</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-white">📊</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p id="top-trigger-label" class="text-sm font-medium text-gray-600 mb-1">Top Trigger</p>
+                            <p class="text-3xl font-bold text-gray-900">Work Stress</p>
+                            <p id="correlation-text" class="text-xs mt-2 text-gray-600">67% correlation</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-white">🎯</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Log Section -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <span class="text-white text-4xl">+</span>
+                </div>
+                <h3 id="having-migraine-text" class="text-2xl font-bold text-gray-900 mb-3">Having a migraine right now?</h3>
+                <p id="choose-migraine-text" class="text-gray-600 mb-8 max-w-md mx-auto">Choose how you want to log your migraine episode</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="quick-log-btn" class="btn-primary">
+                        <span>+</span>
+                        <span id="quick-log-text">Quick Log (1 min)</span>
+                    </button>
+                    
+                    <button id="detailed-log-btn" class="btn-secondary">
+                        <span>📝</span>
+                        <span id="detailed-entry-text">Detailed Entry</span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-center mt-6 text-sm text-gray-500 space-x-6">
+                    <div class="flex items-center">
+                        <span class="mr-1">🕐</span>
+                        <span id="quick-time-text">Quick: 1 minute</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">⏱️</span>
+                        <span id="detailed-time-text">Detailed: 3-5 minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Entries -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                                <span class="text-purple-600">📅</span>
+                            </div>
+                            <div>
+                                <h2 id="recent-entries-title" class="text-xl font-semibold text-gray-900">Recent Entries</h2>
+                                <p id="recent-entries-subtitle" class="text-sm text-gray-500">Your latest migraine logs and patterns</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="recent-entries-list" class="divide-y divide-gray-100">
+                    <!-- Sample entries will be populated here -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="font-semibold text-gray-900">Pain Level 7/10</span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Complete</span>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    Today at 2:30 PM
+                                </div>
+                                <div class="text-sm text-gray-500 mt-1">
+                                    Location: Left Side, Forehead
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics View -->
+        <div id="analytics-view" class="max-w-7xl mx-auto p-4 space-y-8 hidden">
+            <div class="text-center mb-8">
+                <h2 id="analytics-title" class="text-3xl font-bold text-gray-900 mb-2">Analytics & Insights</h2>
+                <p id="analytics-subtitle" class="text-gray-600">Understand your migraine patterns and triggers</p>
+            </div>
+
+            <!-- Treatment Effectiveness -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <h3 id="treatment-effectiveness-title" class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <span class="mr-3 text-purple-600">📊</span>
+                    Treatment Effectiveness Report
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 id="medications-title" class="font-medium text-gray-700 mb-4">Medications</h4>
+                        <div class="space-y-4">
+                            <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold text-green-600">75%</div>
+                                <div class="text-sm font-medium text-gray-700">Sumatriptan 50mg</div>
+                                <div id="used-4-times" class="text-xs text-gray-500">Used 4 times</div>
+                                <div id="highly-effective" class="text-xs text-green-600 mt-1">★★★★☆ Highly Effective</div>
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold text-yellow-600">50%</div>
+                                <div class="text-sm font-medium text-gray-700">Ibuprofen 400mg</div>
+                                <div id="used-2-times" class="text-xs text-gray-500">Used 2 times</div>
+                                <div id="moderately-effective" class="text-xs text-yellow-600 mt-1">★★★☆☆ Moderately Effective</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 id="non-pharma-title" class="font-medium text-gray-700 mb-4">Non-Pharmacological Interventions</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">'Heat Pack' provided relief in 100% of cases when used (1/1 times).</span>
+                                <span class="text-green-600 font-semibold">★★★★★</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">'Dark Room' provided relief in 80% of cases when used (4/5 times).</span>
+                                <span class="text-green-600 font-semibold">★★★★☆</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor Report Section -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <h3 id="doctor-report-title" class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="mr-3 text-purple-600">📥</span>
+                    Exportable Doctor's Report
+                </h3>
+                <p id="doctor-report-desc" class="text-gray-600 mb-6">Generate a comprehensive, professional report for your healthcare provider that includes all your migraine data, patterns, and treatment responses.</p>
+                
+                <div class="bg-blue-50 rounded-xl p-6 mb-6">
+                    <h4 id="report-includes-title" class="font-medium text-blue-800 mb-3">Report will include:</h4>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Migraine frequency and intensity patterns</li>
+                        <li>• Detailed trigger analysis with correlations</li>
+                        <li>• Medication effectiveness ratings</li>
+                        <li>• Hormonal cycle correlations (if applicable)</li>
+                        <li>• Sleep and lifestyle factor analysis</li>
+                        <li>• Visual calendar showing migraine patterns</li>
+                    </ul>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <button id="generate-report-btn" class="bg-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center shadow-lg">
+                        <span class="mr-2">📥</span>
+                        <span id="generate-report-text">Generate PDF Report</span>
+                    </button>
+                    <button id="email-doctor-btn" class="bg-green-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center shadow-lg">
+                        <span class="mr-2">📧</span>
+                        <span id="email-doctor-text">Email to Doctor</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="max-w-4xl mx-auto p-4 space-y-8 hidden">
+            <div class="text-center mb-8">
+                <h2 id="settings-title" class="text-3xl font-bold text-gray-900 mb-2">Settings & Personalization</h2>
+                <p id="settings-subtitle" class="text-gray-600">Customize your migraine tracking experience</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                <h3 id="my-medications-title" class="text-xl font-semibold text-gray-900 mb-6">My Medications</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 id="acute-medications-title" class="font-medium text-gray-700 mb-3">Acute/Abortive Medications</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <span class="font-medium">Sumatriptan 50mg</span>
+                                <button id="remove-btn-1" class="text-red-500 hover:text-red-700 font-medium">Remove</button>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <span class="font-medium">Ibuprofen 400mg</span>
+                                <button id="remove-btn-2" class="text-red-500 hover:text-red-700 font-medium">Remove</button>
+                            </div>
+                        </div>
+                        <button id="add-medication-btn" class="mt-3 text-purple-600 hover:text-purple-800 font-medium flex items-center">
+                            <span class="mr-1">+</span>
+                            <span id="add-medication-text">Add Medication</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Quick Log Modal -->
+    <div id="quick-log-modal" class="modal-backdrop hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-slide-up">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white text-2xl">⚠️</span>
+                </div>
+                <h2 id="quick-log-modal-title" class="text-2xl font-bold text-gray-900 mb-2">Quick Log</h2>
+                <p id="quick-log-modal-subtitle" class="text-gray-600">Log the essentials now, add details later when you feel better</p>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label id="when-start-label" class="block text-sm font-medium text-gray-700 mb-3">When did it start?</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="selection-button selected" data-time="now" id="time-now">Now</button>
+                        <button class="selection-button" data-time="5min" id="time-5min">5 mins ago</button>
+                        <button class="selection-button" data-time="15min" id="time-15min">15 mins ago</button>
+                        <button class="selection-button" data-time="30min" id="time-30min">30 mins ago</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label id="pain-intensity-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Intensity</label>
+                    <div class="relative">
+                        <input type="range" min="1" max="10" value="5" id="pain-slider" class="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-gray-500 mt-2">
+                            <span id="mild-label">1<br/>Mild</span>
+                            <span id="moderate-label">4<br/>Moderate</span>
+                            <span id="severe-label">7<br/>Severe</span>
+                            <span id="worst-label">10<br/>Worst</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <span id="pain-level-display" class="text-3xl font-bold text-gray-900">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex space-x-3 mt-8">
+                <button id="quick-log-cancel" class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors">Cancel</button>
+                <button id="quick-log-save" class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg">Save Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Entry Modal -->
+    <div id="detailed-log-modal" class="modal-backdrop hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
+            <div class="sticky top-0 bg-white rounded-t-3xl p-6 border-b border-gray-100">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">📝</span>
+                    </div>
+                    <h2 id="detailed-modal-title" class="text-2xl font-bold text-gray-900 mb-2">Detailed Entry</h2>
+                    <p id="detailed-modal-subtitle" class="text-gray-600">Complete migraine log with all details</p>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-8">
+                <!-- Pain Level -->
+                <div>
+                    <label id="detailed-pain-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Intensity</label>
+                    <input type="range" min="1" max="10" value="5" id="detailed-pain-slider" class="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer">
+                    <div class="text-center mt-2">
+                        <span id="detailed-pain-display" class="text-2xl font-bold text-gray-900">5/10</span>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label id="pain-location-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Location</label>
+                    <div class="grid grid-cols-2 gap-2" id="location-buttons">
+                        <button class="selection-button" data-location="left_side" id="loc-left">Left Side</button>
+                        <button class="selection-button" data-location="right_side" id="loc-right">Right Side</button>
+                        <button class="selection-button" data-location="both_sides" id="loc-both">Both Sides</button>
+                        <button class="selection-button" data-location="forehead" id="loc-forehead">Forehead</button>
+                        <button class="selection-button" data-location="back_head" id="loc-back">Back of Head</button>
+                        <button class="selection-button" data-location="top_head" id="loc-top">Top of Head</button>
+                    </div>
+                </div>
+
+                <!-- Triggers -->
+                <div>
+                    <label id="possible-triggers-label" class="block text-sm font-medium text-gray-700 mb-3">Possible Triggers</label>
+                    <div class="grid grid-cols-2 gap-2" id="trigger-buttons">
+                        <button class="selection-button" data-trigger="work_stress" id="trig-work">Work Stress</button>
+                        <button class="selection-button" data-trigger="lack_sleep" id="trig-sleep">Lack of Sleep</button>
+                        <button class="selection-button" data-trigger="weather_change" id="trig-weather">Weather Change</button>
+                        <button class="selection-button" data-trigger="bright_lights" id="trig-lights">Bright Lights</button>
+                        <button class="selection-button" data-trigger="loud_sounds" id="trig-sounds">Loud Sounds</button>
+                        <button class="selection-button" data-trigger="certain_foods" id="trig-foods">Certain Foods</button>
+                        <button class="selection-button" data-trigger="hormonal" id="trig-hormonal">Hormonal Changes</button>
+                        <button class="selection-button" data-trigger="dehydration" id="trig-dehydration">Dehydration</button>
+                    </div>
+                </div>
+
+                <!-- Symptoms -->
+                <div>
+                    <label id="associated-symptoms-label" class="block text-sm font-medium text-gray-700 mb-3">Associated Symptoms</label>
+                    <div class="grid grid-cols-2 gap-2" id="symptom-buttons">
+                        <button class="selection-button" data-symptom="nausea" id="symp-nausea">Nausea</button>
+                        <button class="selection-button" data-symptom="vomiting" id="symp-vomiting">Vomiting</button>
+                        <button class="selection-button" data-symptom="photophobia" id="symp-light">Light Sensitivity</button>
+                        <button class="selection-button" data-symptom="phonophobia" id="symp-sound">Sound Sensitivity</button>
+                        <button class="selection-button" data-symptom="dizziness" id="symp-dizziness">Dizziness</button>
+                        <button class="selection-button" data-symptom="fatigue" id="symp-fatigue">Fatigue</button>
+                        <button class="selection-button" data-symptom="confusion" id="symp-confusion">Confusion</button>
+                        <button class="selection-button" data-symptom="mood_changes" id="symp-mood">Mood Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky bottom-0 bg-white rounded-b-3xl p-6 border-t border-gray-100">
+                <div class="flex space-x-3">
+                    <button id="detailed-cancel" class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button id="detailed-save" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg">Save Complete Entry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
         // Language translations
         const translations = {
             en: {
@@ -87,7 +615,7 @@
                 incomplete: "Incomplete",
                 location: "Location",
                 quickLogTitle: "Quick Log",
-                quickLogSubtitle: "Log the essentials now, add details later",
+                quickLogSubtitle: "Log the essentials now, add details later when you feel better",
                 whenStart: "When did it start?",
                 now: "Now",
                 minsAgo: "mins ago",
@@ -265,722 +793,334 @@
             }
         };
 
-        // Custom Hooks
-        const useLocalStorage = (key, initialValue) => {
-            const [storedValue, setStoredValue] = useState(() => {
-                try {
-                    const item = window.localStorage.getItem(key);
-                    return item ? JSON.parse(item) : initialValue;
-                } catch (error) {
-                    return initialValue;
+        // Global state
+        let currentLanguage = localStorage.getItem('language') || 'en';
+        let currentView = 'dashboard';
+        let migraines = JSON.parse(localStorage.getItem('migraines')) || [];
+
+        // Initialize sample data if empty
+        if (migraines.length === 0) {
+            migraines = [
+                {
+                    id: '1',
+                    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    startTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+                    painLevel: 7,
+                    status: 'complete',
+                    locations: ['left_side', 'forehead'],
+                    triggers: ['work_stress', 'lack_sleep'],
+                    symptoms: ['nausea', 'photophobia']
+                },
+                {
+                    id: '2',
+                    timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+                    startTime: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+                    painLevel: 5,
+                    status: 'complete',
+                    locations: ['both_sides'],
+                    triggers: ['weather_change'],
+                    symptoms: ['dizziness']
+                }
+            ];
+            localStorage.setItem('migraines', JSON.stringify(migraines));
+        }
+
+        // Translation function
+        function t(key, params = {}) {
+            let text = translations[currentLanguage][key] || translations.en[key] || key;
+            Object.keys(params).forEach(param => {
+                text = text.replace(`{${param}}`, params[param]);
+            });
+            return text;
+        }
+
+        // Update UI text based on current language
+        function updateLanguage() {
+            const isHindi = currentLanguage === 'hi';
+            
+            // Update language select
+            document.getElementById('language-select').value = currentLanguage;
+            
+            // Add/remove Hindi font class
+            document.body.classList.toggle('hindi-font', isHindi);
+            
+            // Update all text elements
+            const textElements = {
+                'app-title': 'appTitle',
+                'welcome-title': 'welcomeBack',
+                'welcome-subtitle': 'welcomeSubtitle',
+                'migraine-free-text': 'migraineFree',
+                'last-entry-text': 'lastEntry',
+                'this-month-label': 'thisMonth',
+                'avg-intensity-label': 'avgIntensity',
+                'top-trigger-label': 'topTrigger',
+                'having-migraine-text': 'havingMigraine',
+                'choose-migraine-text': 'chooseMigraine',
+                'quick-log-text': 'quickLog',
+                'detailed-entry-text': 'detailedEntry',
+                'quick-time-text': 'quickTime',
+                'detailed-time-text': 'detailedTime',
+                'recent-entries-title': 'recentEntries',
+                'recent-entries-subtitle': 'recentSubtitle',
+                'analytics-title': 'analyticsTitle',
+                'analytics-subtitle': 'analyticsSubtitle',
+                'treatment-effectiveness-title': 'treatmentEffectiveness',
+                'medications-title': 'medications',
+                'non-pharma-title': 'nonPharmacological',
+                'highly-effective': 'highlyEffective',
+                'moderately-effective': 'moderatelyEffective',
+                'doctor-report-title': 'doctorReport',
+                'doctor-report-desc': 'doctorReportDesc',
+                'report-includes-title': 'reportIncludes',
+                'generate-report-text': 'generateReport',
+                'email-doctor-text': 'emailDoctor',
+                'settings-title': 'settingsTitle',
+                'settings-subtitle': 'settingsSubtitle',
+                'my-medications-title': 'myMedications',
+                'acute-medications-title': 'acuteMedications',
+                'add-medication-text': 'addMedication',
+                'quick-log-modal-title': 'quickLogTitle',
+                'quick-log-modal-subtitle': 'quickLogSubtitle',
+                'when-start-label': 'whenStart',
+                'pain-intensity-label': 'painIntensity',
+                'detailed-modal-title': 'detailedEntryTitle',
+                'detailed-modal-subtitle': 'detailedEntrySubtitle',
+                'detailed-pain-label': 'painIntensity',
+                'pain-location-label': 'painLocation',
+                'possible-triggers-label': 'possibleTriggers',
+                'associated-symptoms-label': 'associatedSymptoms'
+            };
+
+            Object.entries(textElements).forEach(([elementId, translationKey]) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = t(translationKey);
                 }
             });
 
-            const setValue = (value) => {
-                try {
-                    setStoredValue(value);
-                    window.localStorage.setItem(key, JSON.stringify(value));
-                } catch (error) {
-                    console.error('Error saving to localStorage:', error);
-                }
+            // Update navigation buttons
+            const navTexts = document.querySelectorAll('.nav-text');
+            navTexts[0].textContent = t('dashboard');
+            navTexts[1].textContent = t('analytics');
+            navTexts[2].textContent = t('settings');
+
+            // Update modal buttons
+            const timeButtons = {
+                'time-now': 'now',
+                'time-5min': '5 ' + t('minsAgo'),
+                'time-15min': '15 ' + t('minsAgo'),
+                'time-30min': '30 ' + t('minsAgo')
             };
 
-            return [storedValue, setValue];
-        };
-
-        const useLanguage = () => {
-            const [language, setLanguage] = useLocalStorage('language', 'en');
-            const t = (key, params = {}) => {
-                let text = translations[language][key] || translations.en[key] || key;
-                Object.keys(params).forEach(param => {
-                    text = text.replace(`{${param}}`, params[param]);
-                });
-                return text;
-            };
-            return { language, setLanguage, t };
-        };
-
-        const useMigraines = () => {
-            const [migraines, setMigraines] = useLocalStorage('migraines', []);
-
-            // Initialize with sample data if empty
-            useEffect(() => {
-                if (migraines.length === 0) {
-                    const sampleData = [
-                        {
-                            id: '1',
-                            timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                            startTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-                            painLevel: 7,
-                            finalPainLevel: 2,
-                            outcome: 2,
-                            status: 'complete',
-                            locations: ['left_side', 'forehead'],
-                            triggers: ['work_stress', 'lack_sleep'],
-                            symptoms: ['nausea', 'photophobia'],
-                            medicationsTaken: [{name: 'sumatriptan', dosage: '50mg', timestamp: new Date().toISOString()}],
-                            reliefMeasures: ['dark_room', 'cold_pack'],
-                            completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-                        },
-                        {
-                            id: '2',
-                            timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-                            startTime: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-                            painLevel: 5,
-                            finalPainLevel: 3,
-                            outcome: 3,
-                            status: 'complete',
-                            locations: ['both_sides'],
-                            triggers: ['weather_change'],
-                            symptoms: ['dizziness'],
-                            medicationsTaken: [{name: 'ibuprofen', dosage: '400mg', timestamp: new Date().toISOString()}],
-                            reliefMeasures: ['hydration'],
-                            completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
-                        }
-                    ];
-                    setMigraines(sampleData);
-                }
-            }, [migraines.length, setMigraines]);
-
-            const addMigraine = useCallback((migraine) => {
-                const newMigraine = {
-                    ...migraine,
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString()
-                };
-                setMigraines(prev => [...prev, newMigraine]);
-            }, [setMigraines]);
-
-            const updateMigraine = useCallback((id, updates) => {
-                setMigraines(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-            }, [setMigraines]);
-
-            return { migraines, addMigraine, updateMigraine };
-        };
-
-        // Simple icon components
-        const Brain = () => <span className="text-2xl">🧠</span>;
-        const Plus = ({ className }) => <span className={`inline-block ${className}`}>+</span>;
-        const BarChart3 = ({ className }) => <span className={`inline-block ${className}`}>📊</span>;
-        const Settings = ({ className }) => <span className={`inline-block ${className}`}>⚙️</span>;
-        const Calendar = ({ className }) => <span className={`inline-block ${className}`}>📅</span>;
-        const Download = ({ className }) => <span className={`inline-block ${className}`}>📥</span>;
-        const Mail = ({ className }) => <span className={`inline-block ${className}`}>📧</span>;
-        const TrendingUp = ({ className }) => <span className={`inline-block ${className}`}>📈</span>;
-        const AlertTriangle = ({ className }) => <span className={`inline-block ${className}`}>⚠️</span>;
-        const Clock = ({ className }) => <span className={`inline-block ${className}`}>🕐</span>;
-        const Target = ({ className }) => <span className={`inline-block ${className}`}>🎯</span>;
-        const Globe = ({ className }) => <span className={`inline-block ${className}`}>🌐</span>;
-
-        // Components
-        const LanguageToggle = ({ language, setLanguage }) => (
-            <div className="flex items-center space-x-2">
-                <Globe className="w-4 h-4 text-gray-600" />
-                <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="bg-transparent border-none text-sm text-gray-600 focus:outline-none cursor-pointer"
-                >
-                    <option value="en">English</option>
-                    <option value="hi">हिंदी</option>
-                </select>
-            </div>
-        );
-
-        const Navigation = ({ activeView, setActiveView, language, setLanguage, t }) => (
-            <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                                <Brain />
-                            </div>
-                            <h1 className={`text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent ${language === 'hi' ? 'hindi-font' : ''}`}>
-                                {t('appTitle')}
-                            </h1>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <LanguageToggle language={language} setLanguage={setLanguage} />
-                            <div className="flex space-x-1">
-                                {[
-                                    { id: 'dashboard', label: t('dashboard'), icon: BarChart3 },
-                                    { id: 'analytics', label: t('analytics'), icon: TrendingUp },
-                                    { id: 'settings', label: t('settings'), icon: Settings }
-                                ].map(({ id, label, icon: Icon }) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => setActiveView(id)}
-                                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${language === 'hi' ? 'hindi-font' : ''} ${
-                                            activeView === id
-                                                ? 'bg-purple-100 text-purple-700 shadow-sm'
-                                                : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-                                        }`}
-                                    >
-                                        <Icon className="w-4 h-4" />
-                                        <span className="hidden sm:inline">{label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        );
-
-        const StatCard = ({ title, value, subtitle, icon: Icon, color = 'purple', trend, language }) => (
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover animate-fade-in">
-                <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                        <p className={`text-sm font-medium text-gray-600 mb-1 ${language === 'hi' ? 'hindi-font' : ''}`}>{title}</p>
-                        <p className="text-3xl font-bold text-gray-900">{value}</p>
-                        {subtitle && (
-                            <p className={`text-xs mt-2 flex items-center ${language === 'hi' ? 'hindi-font' : ''} ${
-                                trend === 'up' ? 'text-red-600' : trend === 'down' ? 'text-green-600' : 'text-gray-600'
-                            }`}>
-                                {trend && (
-                                    <TrendingUp className={`w-3 h-3 mr-1 ${trend === 'down' ? 'rotate-180' : ''}`} />
-                                )}
-                                {subtitle}
-                            </p>
-                        )}
-                    </div>
-                    <div className={`w-12 h-12 bg-gradient-to-br from-${color}-500 to-${color}-600 rounded-xl flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" />
-                    </div>
-                </div>
-            </div>
-        );
-
-        const DetailedEntryModal = ({ isOpen, onClose, onSave, t, language }) => {
-            const [formData, setFormData] = useState({
-                startTime: new Date(),
-                painLevel: 5,
-                locations: [],
-                triggers: [],
-                symptoms: [],
-                medications: [],
-                reliefMeasures: []
+            Object.entries(timeButtons).forEach(([elementId, text]) => {
+                const element = document.getElementById(elementId);
+                if (element) element.textContent = text;
             });
 
-            if (!isOpen) return null;
+            // Update pain level labels
+            document.getElementById('mild-label').innerHTML = `1<br/>${t('mild')}`;
+            document.getElementById('moderate-label').innerHTML = `4<br/>${t('moderate')}`;
+            document.getElementById('severe-label').innerHTML = `7<br/>${t('severe')}`;
+            document.getElementById('worst-label').innerHTML = `10<br/>${t('worst')}`;
 
-            const handleSave = () => {
-                onSave({
-                    ...formData,
-                    status: 'complete'
-                });
-                onClose();
+            // Update location buttons
+            const locationButtons = {
+                'loc-left': 'leftSide',
+                'loc-right': 'rightSide',
+                'loc-both': 'bothSides',
+                'loc-forehead': 'forehead',
+                'loc-back': 'backHead',
+                'loc-top': 'topHead'
             };
 
-            const toggleSelection = (category, item) => {
-                setFormData(prev => ({
-                    ...prev,
-                    [category]: prev[category].includes(item)
-                        ? prev[category].filter(i => i !== item)
-                        : [...prev[category], item]
-                }));
+            Object.entries(locationButtons).forEach(([elementId, translationKey]) => {
+                const element = document.getElementById(elementId);
+                if (element) element.textContent = t(translationKey);
+            });
+
+            // Update trigger buttons
+            const triggerButtons = {
+                'trig-work': 'workStress',
+                'trig-sleep': 'lackSleep',
+                'trig-weather': 'weatherChange',
+                'trig-lights': 'brightLights',
+                'trig-sounds': 'loudSounds',
+                'trig-foods': 'certainFoods',
+                'trig-hormonal': 'hormonal',
+                'trig-dehydration': 'dehydration'
             };
 
-            const locationOptions = [
-                { id: 'left_side', label: t('leftSide') },
-                { id: 'right_side', label: t('rightSide') },
-                { id: 'both_sides', label: t('bothSides') },
-                { id: 'forehead', label: t('forehead') },
-                { id: 'back_head', label: t('backHead') },
-                { id: 'top_head', label: t('topHead') }
-            ];
+            Object.entries(triggerButtons).forEach(([elementId, translationKey]) => {
+                const element = document.getElementById(elementId);
+                if (element) element.textContent = t(translationKey);
+            });
 
-            const triggerOptions = [
-                { id: 'work_stress', label: t('workStress') },
-                { id: 'lack_sleep', label: t('lackSleep') },
-                { id: 'weather_change', label: t('weatherChange') },
-                { id: 'bright_lights', label: t('brightLights') },
-                { id: 'loud_sounds', label: t('loudSounds') },
-                { id: 'certain_foods', label: t('certainFoods') },
-                { id: 'hormonal', label: t('hormonal') },
-                { id: 'dehydration', label: t('dehydration') }
-            ];
-
-            const symptomOptions = [
-                { id: 'nausea', label: t('nausea') },
-                { id: 'vomiting', label: t('vomiting') },
-                { id: 'photophobia', label: t('lightSensitivity') },
-                { id: 'phonophobia', label: t('soundSensitivity') },
-                { id: 'dizziness', label: t('dizziness') },
-                { id: 'fatigue', label: t('fatigue') },
-                { id: 'confusion', label: t('confusion') },
-                { id: 'mood_changes', label: t('moodChanges') }
-            ];
-
-            return (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
-                        <div className="sticky top-0 bg-white rounded-t-3xl p-6 border-b border-gray-100">
-                            <div className="text-center">
-                                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <span className="text-2xl">📝</span>
-                                </div>
-                                <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('detailedEntryTitle')}</h2>
-                                <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('detailedEntrySubtitle')}</p>
-                            </div>
-                        </div>
-
-                        <div className="p-6 space-y-8">
-                            {/* Pain Level */}
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painIntensity')}</label>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    value={formData.painLevel}
-                                    onChange={(e) => setFormData(prev => ({...prev, painLevel: parseInt(e.target.value)}))}
-                                    className="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer"
-                                />
-                                <div className="text-center mt-2">
-                                    <span className="text-2xl font-bold text-gray-900">{formData.painLevel}/10</span>
-                                </div>
-                            </div>
-
-                            {/* Location */}
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painLocation')}</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {locationOptions.map(option => (
-                                        <button
-                                            key={option.id}
-                                            onClick={() => toggleSelection('locations', option.id)}
-                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
-                                                formData.locations.includes(option.id)
-                                                    ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Triggers */}
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('possibleTriggers')}</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {triggerOptions.map(option => (
-                                        <button
-                                            key={option.id}
-                                            onClick={() => toggleSelection('triggers', option.id)}
-                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
-                                                formData.triggers.includes(option.id)
-                                                    ? 'bg-orange-100 text-orange-700 ring-2 ring-orange-500'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Symptoms */}
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('associatedSymptoms')}</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {symptomOptions.map(option => (
-                                        <button
-                                            key={option.id}
-                                            onClick={() => toggleSelection('symptoms', option.id)}
-                                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${language === 'hi' ? 'hindi-font' : ''} ${
-                                                formData.symptoms.includes(option.id)
-                                                    ? 'bg-red-100 text-red-700 ring-2 ring-red-500'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="sticky bottom-0 bg-white rounded-b-3xl p-6 border-t border-gray-100">
-                            <div className="flex space-x-3">
-                                <button
-                                    onClick={onClose}
-                                    className={`flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors ${language === 'hi' ? 'hindi-font' : ''}`}
-                                >
-                                    {t('cancel')}
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className={`flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
-                                >
-                                    {t('saveCompleteEntry')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const QuickLogModal = ({ isOpen, onClose, onSave, t, language }) => {
-            const [painLevel, setPainLevel] = useState(5);
-            const [startTime, setStartTime] = useState('now');
-
-            if (!isOpen) return null;
-
-            const handleSave = () => {
-                const now = new Date();
-                let actualStartTime;
-                
-                switch(startTime) {
-                    case 'now': actualStartTime = now; break;
-                    case '5min': actualStartTime = new Date(now.getTime() - 5 * 60000); break;
-                    case '15min': actualStartTime = new Date(now.getTime() - 15 * 60000); break;
-                    case '30min': actualStartTime = new Date(now.getTime() - 30 * 60000); break;
-                    default: actualStartTime = now;
-                }
-
-                onSave({
-                    startTime: actualStartTime,
-                    painLevel,
-                    status: 'incomplete'
-                });
-                onClose();
+            // Update symptom buttons
+            const symptomButtons = {
+                'symp-nausea': 'nausea',
+                'symp-vomiting': 'vomiting',
+                'symp-light': 'lightSensitivity',
+                'symp-sound': 'soundSensitivity',
+                'symp-dizziness': 'dizziness',
+                'symp-fatigue': 'fatigue',
+                'symp-confusion': 'confusion',
+                'symp-mood': 'moodChanges'
             };
 
-            return (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-slide-up">
-                        <div className="text-center mb-8">
-                            <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <AlertTriangle className="w-8 h-8 text-white" />
-                            </div>
-                            <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('quickLogTitle')}</h2>
-                            <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('quickLogSubtitle')}</p>
-                        </div>
+            Object.entries(symptomButtons).forEach(([elementId, translationKey]) => {
+                const element = document.getElementById(elementId);
+                if (element) element.textContent = t(translationKey);
+            });
 
-                        <div className="space-y-6">
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('whenStart')}</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {[
-                                        { value: 'now', label: t('now') },
-                                        { value: '5min', label: `5 ${t('minsAgo')}` },
-                                        { value: '15min', label: `15 ${t('minsAgo')}` },
-                                        { value: '30min', label: `30 ${t('minsAgo')}` }
-                                    ].map(({ value, label }) => (
-                                        <button
-                                            key={value}
-                                            onClick={() => setStartTime(value)}
-                                            className={`py-3 px-4 rounded-xl font-medium transition-all duration-200 ${language === 'hi' ? 'hindi-font' : ''} ${
-                                                startTime === value
-                                                    ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-500'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+            // Update cancel and save buttons
+            document.getElementById('quick-log-cancel').textContent = t('cancel');
+            document.getElementById('quick-log-save').textContent = t('saveNow');
+            document.getElementById('detailed-cancel').textContent = t('cancel');
+            document.getElementById('detailed-save').textContent = t('saveCompleteEntry');
 
-                            <div>
-                                <label className={`block text-sm font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painIntensity')}</label>
-                                <div className="relative">
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="10"
-                                        value={painLevel}
-                                        onChange={(e) => setPainLevel(parseInt(e.target.value))}
-                                        className="w-full h-3 pain-slider rounded-lg appearance-none cursor-pointer"
-                                    />
-                                    <div className={`flex justify-between text-xs text-gray-500 mt-2 ${language === 'hi' ? 'hindi-font' : ''}`}>
-                                        <span>1<br/>{t('mild')}</span>
-                                        <span>4<br/>{t('moderate')}</span>
-                                        <span>7<br/>{t('severe')}</span>
-                                        <span>10<br/>{t('worst')}</span>
-                                    </div>
-                                </div>
-                                <div className="text-center mt-4">
-                                    <span className="text-3xl font-bold text-gray-900">{painLevel}</span>
-                                </div>
-                            </div>
-                        </div>
+            // Update remove buttons
+            const removeButtons = document.querySelectorAll('[id^="remove-btn"]');
+            removeButtons.forEach(btn => btn.textContent = t('remove'));
+        }
 
-                        <div className="flex space-x-3 mt-8">
-                            <button
-                                onClick={onClose}
-                                className={`flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                {t('cancel')}
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                className={`flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                {t('saveNow')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+        // Navigation functionality
+        function showView(viewName) {
+            // Hide all views
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('analytics-view').classList.add('hidden');
+            document.getElementById('settings-view').classList.add('hidden');
 
-        const Dashboard = ({ migraines, onQuickLog, onDetailedLog, t, language }) => {
-            const stats = useMemo(() => {
-                const now = new Date();
-                const thisMonth = migraines.filter(m => {
-                    const date = new Date(m.startTime);
-                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            // Show selected view
+            document.getElementById(viewName + '-view').classList.remove('hidden');
+
+            // Update navigation buttons
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + viewName).classList.add('active');
+
+            currentView = viewName;
+        }
+
+        // Modal functionality
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Selection button functionality
+        function setupSelectionButtons() {
+            // Time selection buttons
+            document.querySelectorAll('[data-time]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
                 });
+            });
 
-                const lastMonth = migraines.filter(m => {
-                    const date = new Date(m.startTime);
-                    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    return date.getMonth() === lastMonthDate.getMonth() && date.getFullYear() === lastMonthDate.getFullYear();
+            // Location selection buttons
+            document.querySelectorAll('[data-location]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
                 });
+            });
 
-                const avgIntensity = thisMonth.length > 0 
-                    ? (thisMonth.reduce((sum, m) => sum + m.painLevel, 0) / thisMonth.length).toFixed(1)
-                    : '0.0';
-
-                // Calculate top trigger
-                const triggerCounts = {};
-                thisMonth.forEach(migraine => {
-                    if (migraine.triggers) {
-                        migraine.triggers.forEach(trigger => {
-                            triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
-                        });
-                    }
+            // Trigger selection buttons
+            document.querySelectorAll('[data-trigger]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
                 });
+            });
 
-                const topTrigger = Object.entries(triggerCounts)
-                    .sort(([,a], [,b]) => b - a)[0];
+            // Symptom selection buttons
+            document.querySelectorAll('[data-symptom]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
+                });
+            });
+        }
 
-                return {
-                    thisMonth: thisMonth.length,
-                    lastMonth: lastMonth.length,
-                    avgIntensity,
-                    topTrigger: topTrigger ? {
-                        name: topTrigger[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        correlation: Math.round((topTrigger[1] / thisMonth.length) * 100)
-                    } : null
-                };
-            }, [migraines]);
+        // Pain slider functionality
+        function setupPainSliders() {
+            const quickSlider = document.getElementById('pain-slider');
+            const quickDisplay = document.getElementById('pain-level-display');
+            const detailedSlider = document.getElementById('detailed-pain-slider');
+            const detailedDisplay = document.getElementById('detailed-pain-display');
 
-            const recentEntries = useMemo(() => migraines.slice(-5).reverse(), [migraines]);
+            quickSlider.addEventListener('input', (e) => {
+                quickDisplay.textContent = e.target.value;
+            });
 
-            return (
-                <div className="max-w-7xl mx-auto p-4 space-y-8">
-                    {/* Hero Section */}
-                    <div className="gradient-bg rounded-3xl p-8 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-black/20"></div>
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h1 className={`text-4xl font-bold mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('welcomeBack')}</h1>
-                                    <p className={`text-lg text-purple-100 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('welcomeSubtitle')}</p>
-                                    <div className="flex items-center space-x-6 text-sm">
-                                        <div className="flex items-center glass-effect rounded-full px-4 py-2">
-                                            <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
-                                            <span className={language === 'hi' ? 'hindi-font' : ''}>7 {t('migraineFree')}</span>
-                                        </div>
-                                        <div className="flex items-center glass-effect rounded-full px-4 py-2">
-                                            <Clock className="w-3 h-3 mr-2" />
-                                            <span className={language === 'hi' ? 'hindi-font' : ''}>{t('lastEntry')}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="hidden md:block">
-                                    <div className="w-32 h-32 glass-effect rounded-full flex items-center justify-center">
-                                        <Brain />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Decorative elements */}
-                        <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full"></div>
-                        <div className="absolute bottom-4 left-4 w-16 h-16 bg-white/10 rounded-full"></div>
-                    </div>
+            detailedSlider.addEventListener('input', (e) => {
+                detailedDisplay.textContent = e.target.value + '/10';
+            });
+        }
 
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <StatCard
-                            title={t('thisMonth')}
-                            value={stats.thisMonth}
-                            subtitle={`${stats.thisMonth > stats.lastMonth ? '+' : ''}${stats.thisMonth - stats.lastMonth} ${t('fromLastMonth')}`}
-                            icon={Calendar}
-                            color="red"
-                            trend={stats.thisMonth > stats.lastMonth ? 'up' : stats.thisMonth < stats.lastMonth ? 'down' : null}
-                            language={language}
-                        />
-                        <StatCard
-                            title={t('avgIntensity')}
-                            value={stats.avgIntensity}
-                            subtitle={stats.avgIntensity <= 3 ? t('mildSeverity') : stats.avgIntensity <= 6 ? t('moderateSeverity') : t('highSeverity')}
-                            icon={BarChart3}
-                            color="yellow"
-                            language={language}
-                        />
-                        <StatCard
-                            title={t('topTrigger')}
-                            value={stats.topTrigger?.name || t('noData')}
-                            subtitle={stats.topTrigger ? `${stats.topTrigger.correlation}% ${t('correlation')}` : t('noData')}
-                            icon={Target}
-                            color="purple"
-                            language={language}
-                        />
-                    </div>
-
-                    {/* Quick Log Section */}
-                    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 text-center">
-                        <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                            <Plus className="w-10 h-10 text-white text-4xl" />
-                        </div>
-                        <h3 className={`text-2xl font-bold text-gray-900 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('havingMigraine')}</h3>
-                        <p className={`text-gray-600 mb-8 max-w-md mx-auto ${language === 'hi' ? 'hindi-font' : ''}`}>{t('chooseMigraine')}</p>
-                        
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button
-                                onClick={onQuickLog}
-                                className={`bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                <Plus className="w-6 h-6 mr-2" />
-                                {t('quickLog')}
-                            </button>
-                            
-                            <button
-                                onClick={onDetailedLog}
-                                className={`bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                <span className="text-xl mr-2">📝</span>
-                                {t('detailedEntry')}
-                            </button>
-                        </div>
-                        
-                        <div className={`flex items-center justify-center mt-6 text-sm text-gray-500 space-x-6 ${language === 'hi' ? 'hindi-font' : ''}`}>
-                            <div className="flex items-center">
-                                <Clock className="w-4 h-4 mr-1" />
-                                {t('quickTime')}
-                            </div>
-                            <div className="flex items-center">
-                                <span className="text-lg mr-1">⏱️</span>
-                                {t('detailedTime')}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Recent Entries */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
-                                        <Calendar className="w-6 h-6 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <h2 className={`text-xl font-semibold text-gray-900 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('recentEntries')}</h2>
-                                        <p className={`text-sm text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('recentSubtitle')}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="divide-y divide-gray-100">
-                            {recentEntries.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500">
-                                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                    <p className={language === 'hi' ? 'hindi-font' : ''}>{t('noEntries')}</p>
-                                </div>
-                            ) : (
-                                recentEntries.map((entry) => (
-                                    <div key={entry.id} className="p-6 hover:bg-gray-50 transition-colors">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <div className="flex items-center space-x-3 mb-2">
-                                                    <span className={`font-semibold text-gray-900 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('painLevel')} {entry.painLevel}/10</span>
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${language === 'hi' ? 'hindi-font' : ''} ${
-                                                        entry.status === 'complete' 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                        {entry.status === 'complete' ? t('complete') : t('incomplete')}
-                                                    </span>
-                                                </div>
-                                                <div className="text-sm text-gray-600">
-                                                    {new Date(entry.startTime).toLocaleDateString()} at {new Date(entry.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                                </div>
-                                                {entry.locations && (
-                                                    <div className={`text-sm text-gray-500 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>
-                                                        {t('location')}: {entry.locations.join(', ')}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const Analytics = ({ migraines, t, language }) => {
-            const generateDoctorReport = () => {
-                if (migraines.length === 0) {
-                    alert(t('noDataReport'));
-                    return;
-                }
-
-                const reportContent = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Migraine Medical Report</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                            .section { margin-bottom: 30px; }
-                            .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h1>MIGRAINE TRACKER - COMPREHENSIVE MEDICAL REPORT</h1>
-                            <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
-                        </div>
-                        <div class="section">
-                            <h2>PATIENT SUMMARY</h2>
-                            <p><strong>Total Migraines Recorded:</strong> ${migraines.length}</p>
-                            <p><strong>Average Pain Intensity:</strong> ${(migraines.reduce((sum, m) => sum + m.painLevel, 0) / migraines.length).toFixed(1)}/10</p>
-                        </div>
-                    </body>
-                    </html>
-                `;
-
-                const blob = new Blob([reportContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `migraine-report-${new Date().toISOString().split('T')[0]}.html`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-
-                alert(t('reportGenerated'));
+        // Save migraine data
+        function saveMigraine(data) {
+            const migraine = {
+                id: Date.now().toString(),
+                timestamp: new Date().toISOString(),
+                ...data
             };
+            migraines.push(migraine);
+            localStorage.setItem('migraines', JSON.stringify(migraines));
+        }
 
-            const emailReport = () => {
-                const doctorEmail = prompt(t('enterDoctorEmail'), 'doctor@example.com');
-                if (!doctorEmail) return;
+        // Generate doctor report
+        function generateDoctorReport() {
+            if (migraines.length === 0) {
+                alert(t('noDataReport'));
+                return;
+            }
 
-                const subject = `Migraine Medical Report - ${new Date().toLocaleDateString()}`;
-                const body = `Dear Healthcare Provider,
+            const reportContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Migraine Medical Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                        .section { margin-bottom: 30px; }
+                        .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>MIGRAINE TRACKER - COMPREHENSIVE MEDICAL REPORT</h1>
+                        <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    <div class="section">
+                        <h2>PATIENT SUMMARY</h2>
+                        <p><strong>Total Migraines Recorded:</strong> ${migraines.length}</p>
+                        <p><strong>Average Pain Intensity:</strong> ${(migraines.reduce((sum, m) => sum + m.painLevel, 0) / migraines.length).toFixed(1)}/10</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([reportContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `migraine-report-${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert(t('reportGenerated'));
+        }
+
+        // Email report
+        function emailReport() {
+            const doctorEmail = prompt(t('enterDoctorEmail'), 'doctor@example.com');
+            if (!doctorEmail) return;
+
+            const subject = `Migraine Medical Report - ${new Date().toLocaleDateString()}`;
+            const body = `Dear Healthcare Provider,
 
 Please find my comprehensive migraine report. This data has been collected using a digital migraine tracking application.
 
@@ -991,193 +1131,96 @@ MIGRAINE SUMMARY:
 Best regards,
 Your Patient`;
 
-                const mailtoLink = `mailto:${doctorEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                window.location.href = mailtoLink;
-            };
+            const mailtoLink = `mailto:${doctorEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+        }
 
-            return (
-                <div className="max-w-7xl mx-auto p-4 space-y-8">
-                    <div className="text-center mb-8">
-                        <h2 className={`text-3xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('analyticsTitle')}</h2>
-                        <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('analyticsSubtitle')}</p>
-                    </div>
+        // Initialize the app
+        function init() {
+            // Set up language
+            updateLanguage();
 
-                    {/* Treatment Effectiveness */}
-                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                        <h3 className={`text-xl font-semibold text-gray-900 mb-6 flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
-                            <BarChart3 className="w-6 h-6 mr-3 text-purple-600" />
-                            {t('treatmentEffectiveness')}
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <h4 className={`font-medium text-gray-700 mb-4 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('medications')}</h4>
-                                <div className="space-y-4">
-                                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                                        <div className="text-2xl font-bold text-green-600">75%</div>
-                                        <div className="text-sm font-medium text-gray-700">Sumatriptan 50mg</div>
-                                        <div className={`text-xs text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('usedTimes', {count: 4})}</div>
-                                        <div className={`text-xs text-green-600 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>★★★★☆ {t('highlyEffective')}</div>
-                                    </div>
-                                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                        <div className="text-2xl font-bold text-yellow-600">50%</div>
-                                        <div className="text-sm font-medium text-gray-700">Ibuprofen 400mg</div>
-                                        <div className={`text-xs text-gray-500 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('usedTimes', {count: 2})}</div>
-                                        <div className={`text-xs text-yellow-600 mt-1 ${language === 'hi' ? 'hindi-font' : ''}`}>★★★☆☆ {t('moderatelyEffective')}</div>
-                                    </div>
-                                </div>
-                            </div>
+            // Set up navigation
+            document.getElementById('nav-dashboard').addEventListener('click', () => showView('dashboard'));
+            document.getElementById('nav-analytics').addEventListener('click', () => showView('analytics'));
+            document.getElementById('nav-settings').addEventListener('click', () => showView('settings'));
 
-                            <div>
-                                <h4 className={`font-medium text-gray-700 mb-4 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('nonPharmacological')}</h4>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className={`text-gray-700 ${language === 'hi' ? 'hindi-font' : ''}`}>'Heat Pack' {t('providedRelief', {percent: 100, used: 1, total: 1})}</span>
-                                        <span className="text-green-600 font-semibold">★★★★★</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className={`text-gray-700 ${language === 'hi' ? 'hindi-font' : ''}`}>'Dark Room' {t('providedRelief', {percent: 80, used: 4, total: 5})}</span>
-                                        <span className="text-green-600 font-semibold">★★★★☆</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            // Set up language selector
+            document.getElementById('language-select').addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                localStorage.setItem('language', currentLanguage);
+                updateLanguage();
+            });
 
-                    {/* Doctor Report Section */}
-                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                        <h3 className={`text-xl font-semibold text-gray-900 mb-4 flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
-                            <Download className="w-6 h-6 mr-3 text-purple-600" />
-                            {t('doctorReport')}
-                        </h3>
-                        <p className={`text-gray-600 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('doctorReportDesc')}</p>
-                        
-                        <div className="bg-blue-50 rounded-xl p-6 mb-6">
-                            <h4 className={`font-medium text-blue-800 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('reportIncludes')}</h4>
-                            <ul className={`text-sm text-blue-700 space-y-1 ${language === 'hi' ? 'hindi-font' : ''}`}>
-                                <li>• Migraine frequency and intensity patterns</li>
-                                <li>• Detailed trigger analysis with correlations</li>
-                                <li>• Medication effectiveness ratings</li>
-                                <li>• Hormonal cycle correlations (if applicable)</li>
-                                <li>• Sleep and lifestyle factor analysis</li>
-                                <li>• Visual calendar showing migraine patterns</li>
-                            </ul>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-4">
-                            <button
-                                onClick={generateDoctorReport}
-                                className={`bg-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                <Download className="w-5 h-5 mr-2" />
-                                {t('generateReport')}
-                            </button>
-                            <button
-                                onClick={emailReport}
-                                className={`bg-green-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center shadow-lg ${language === 'hi' ? 'hindi-font' : ''}`}
-                            >
-                                <Mail className="w-5 h-5 mr-2" />
-                                {t('emailDoctor')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+            // Set up modal triggers
+            document.getElementById('quick-log-btn').addEventListener('click', () => showModal('quick-log-modal'));
+            document.getElementById('detailed-log-btn').addEventListener('click', () => showModal('detailed-log-modal'));
 
-        const SettingsView = ({ t, language }) => (
-            <div className="max-w-4xl mx-auto p-4 space-y-8">
-                <div className="text-center mb-8">
-                    <h2 className={`text-3xl font-bold text-gray-900 mb-2 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('settingsTitle')}</h2>
-                    <p className={`text-gray-600 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('settingsSubtitle')}</p>
-                </div>
+            // Set up modal close buttons
+            document.getElementById('quick-log-cancel').addEventListener('click', () => hideModal('quick-log-modal'));
+            document.getElementById('detailed-cancel').addEventListener('click', () => hideModal('detailed-log-modal'));
 
-                <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                    <h3 className={`text-xl font-semibold text-gray-900 mb-6 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('myMedications')}</h3>
-                    
-                    <div className="space-y-6">
-                        <div>
-                            <h4 className={`font-medium text-gray-700 mb-3 ${language === 'hi' ? 'hindi-font' : ''}`}>{t('acuteMedications')}</h4>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                                    <span className="font-medium">Sumatriptan 50mg</span>
-                                    <button className={`text-red-500 hover:text-red-700 font-medium ${language === 'hi' ? 'hindi-font' : ''}`}>{t('remove')}</button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                                    <span className="font-medium">Ibuprofen 400mg</span>
-                                    <button className={`text-red-500 hover:text-red-700 font-medium ${language === 'hi' ? 'hindi-font' : ''}`}>{t('remove')}</button>
-                                </div>
-                            </div>
-                            <button className={`mt-3 text-purple-600 hover:text-purple-800 font-medium flex items-center ${language === 'hi' ? 'hindi-font' : ''}`}>
-                                <Plus className="w-4 h-4 mr-1" />
-                                {t('addMedication')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-
-        // Main App Component
-        const MigraineTracker = () => {
-            const [activeView, setActiveView] = useState('dashboard');
-            const [showQuickLog, setShowQuickLog] = useState(false);
-            const [showDetailedLog, setShowDetailedLog] = useState(false);
-            const { migraines, addMigraine } = useMigraines();
-            const { language, setLanguage, t } = useLanguage();
-
-            const handleQuickLog = () => setShowQuickLog(true);
-            const handleCloseQuickLog = () => setShowQuickLog(false);
-            const handleSaveQuickLog = (migrainerData) => {
-                addMigraine(migrainerData);
-                alert(t('quickEntrySaved'));
-            };
-
-            const handleDetailedLog = () => setShowDetailedLog(true);
-            const handleCloseDetailedLog = () => setShowDetailedLog(false);
-            const handleSaveDetailedLog = (migrainerData) => {
-                addMigraine(migrainerData);
-                alert(t('detailedEntrySaved'));
-            };
-
-            const renderView = () => {
-                switch (activeView) {
-                    case 'analytics':
-                        return <Analytics migraines={migraines} t={t} language={language} />;
-                    case 'settings':
-                        return <SettingsView t={t} language={language} />;
-                    default:
-                        return <Dashboard migraines={migraines} onQuickLog={handleQuickLog} onDetailedLog={handleDetailedLog} t={t} language={language} />;
+            // Set up save buttons
+            document.getElementById('quick-log-save').addEventListener('click', () => {
+                const painLevel = parseInt(document.getElementById('pain-slider').value);
+                const selectedTime = document.querySelector('[data-time].selected').dataset.time;
+                
+                let startTime = new Date();
+                switch(selectedTime) {
+                    case '5min': startTime = new Date(Date.now() - 5 * 60000); break;
+                    case '15min': startTime = new Date(Date.now() - 15 * 60000); break;
+                    case '30min': startTime = new Date(Date.now() - 30 * 60000); break;
                 }
-            };
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-                    <Navigation activeView={activeView} setActiveView={setActiveView} language={language} setLanguage={setLanguage} t={t} />
-                    <main className="pb-8">
-                        {renderView()}
-                    </main>
-                    <QuickLogModal
-                        isOpen={showQuickLog}
-                        onClose={handleCloseQuickLog}
-                        onSave={handleSaveQuickLog}
-                        t={t}
-                        language={language}
-                    />
-                    <DetailedEntryModal
-                        isOpen={showDetailedLog}
-                        onClose={handleCloseDetailedLog}
-                        onSave={handleSaveDetailedLog}
-                        t={t}
-                        language={language}
-                    />
-                </div>
-            );
-        };
+                saveMigraine({
+                    startTime,
+                    painLevel,
+                    status: 'incomplete'
+                });
 
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MigraineTracker />);
+                hideModal('quick-log-modal');
+                alert(t('quickEntrySaved'));
+            });
+
+            document.getElementById('detailed-save').addEventListener('click', () => {
+                const painLevel = parseInt(document.getElementById('detailed-pain-slider').value);
+                const locations = Array.from(document.querySelectorAll('[data-location].selected')).map(btn => btn.dataset.location);
+                const triggers = Array.from(document.querySelectorAll('[data-trigger].selected')).map(btn => btn.dataset.trigger);
+                const symptoms = Array.from(document.querySelectorAll('[data-symptom].selected')).map(btn => btn.dataset.symptom);
+
+                saveMigraine({
+                    startTime: new Date(),
+                    painLevel,
+                    locations,
+                    triggers,
+                    symptoms,
+                    status: 'complete'
+                });
+
+                hideModal('detailed-log-modal');
+                alert(t('detailedEntrySaved'));
+            });
+
+            // Set up report buttons
+            document.getElementById('generate-report-btn').addEventListener('click', generateDoctorReport);
+            document.getElementById('email-doctor-btn').addEventListener('click', emailReport);
+
+            // Set up selection buttons and sliders
+            setupSelectionButtons();
+            setupPainSliders();
+
+            // Close modals when clicking backdrop
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) {
+                        backdrop.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        // Start the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96982965a13720c5',t:'MTc1NDI0ODcxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969832ac027e8087',t:'MTc1NDI0OTA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
