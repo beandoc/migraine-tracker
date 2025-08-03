@@ -322,23 +322,7 @@
                     </div>
                 </div>
                 <div id="recent-entries-list" class="divide-y divide-gray-100">
-                    <!-- Sample entries will be populated here -->
-                    <div class="p-6 hover:bg-gray-50 transition-colors">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <span class="font-semibold text-gray-900">Pain Level 7/10</span>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Complete</span>
-                                </div>
-                                <div class="text-sm text-gray-600">
-                                    Today at 2:30 PM
-                                </div>
-                                <div class="text-sm text-gray-500 mt-1">
-                                    Location: Left Side, Forehead
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Entries will be populated here -->
                 </div>
             </div>
         </div>
@@ -360,33 +344,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <h4 id="medications-title" class="font-medium text-gray-700 mb-4">Medications</h4>
-                        <div class="space-y-4">
-                            <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                                <div class="text-2xl font-bold text-green-600">75%</div>
-                                <div class="text-sm font-medium text-gray-700">Sumatriptan 50mg</div>
-                                <div id="used-4-times" class="text-xs text-gray-500">Used 4 times</div>
-                                <div id="highly-effective" class="text-xs text-green-600 mt-1">★★★★☆ Highly Effective</div>
-                            </div>
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                <div class="text-2xl font-bold text-yellow-600">50%</div>
-                                <div class="text-sm font-medium text-gray-700">Ibuprofen 400mg</div>
-                                <div id="used-2-times" class="text-xs text-gray-500">Used 2 times</div>
-                                <div id="moderately-effective" class="text-xs text-yellow-600 mt-1">★★★☆☆ Moderately Effective</div>
-                            </div>
+                        <div class="space-y-4" id="medications-container">
+                            <!-- Medication effectiveness will be populated here -->
                         </div>
                     </div>
 
                     <div>
                         <h4 id="non-pharma-title" class="font-medium text-gray-700 mb-4">Non-Pharmacological Interventions</h4>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <span class="text-gray-700">'Heat Pack' provided relief in 100% of cases when used (1/1 times).</span>
-                                <span class="text-green-600 font-semibold">★★★★★</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <span class="text-gray-700">'Dark Room' provided relief in 80% of cases when used (4/5 times).</span>
-                                <span class="text-green-600 font-semibold">★★★★☆</span>
-                            </div>
+                        <div class="space-y-3" id="relief-methods-container">
+                            <!-- Relief method effectiveness will be populated here -->
                         </div>
                     </div>
                 </div>
@@ -511,16 +477,19 @@
 
     <!-- Quick Log Modal -->
     <div id="quick-log-modal" class="modal-backdrop hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-slide-up">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-white text-2xl">⚠️</span>
+        <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] shadow-2xl animate-slide-up flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex-shrink-0">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">⚠️</span>
+                    </div>
+                    <h2 id="quick-log-modal-title" class="text-2xl font-bold text-gray-900 mb-2">Quick Log</h2>
+                    <p id="quick-log-modal-subtitle" class="text-gray-600">Log the essentials now, add details later when you feel better</p>
                 </div>
-                <h2 id="quick-log-modal-title" class="text-2xl font-bold text-gray-900 mb-2">Quick Log</h2>
-                <p id="quick-log-modal-subtitle" class="text-gray-600">Log the essentials now, add details later when you feel better</p>
             </div>
 
-            <div class="space-y-6">
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="space-y-6">
                 <!-- Exact Date and Time -->
                 <div>
                     <label id="when-start-label" class="block text-sm font-medium text-gray-700 mb-3">When did it start?</label>
@@ -592,9 +561,11 @@
                 </div>
             </div>
 
-            <div class="flex space-x-3 mt-8">
-                <button id="quick-log-cancel" class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors">Cancel</button>
-                <button id="quick-log-save" class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg">Save Now</button>
+            <div class="p-6 border-t border-gray-100 flex-shrink-0">
+                <div class="flex space-x-3">
+                    <button id="quick-log-cancel" class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button id="quick-log-save" class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg">Save Now</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1037,79 +1008,7 @@
         }
 
         function initializeSampleData() {
-            const now = new Date();
-            migraines = [
-                {
-                    id: generateId(),
-                    timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
-                    startTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
-                    endTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
-                    painLevel: 7,
-                    status: 'complete',
-                    locations: ['left_side', 'forehead'],
-                    triggers: ['work_stress', 'lack_sleep'],
-                    symptoms: ['nausea', 'photophobia'],
-                    medications: ['Sumatriptan 50mg'],
-                    effectiveness: 75,
-                    notes: 'Started during work meeting'
-                },
-                {
-                    id: generateId(),
-                    timestamp: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
-                    startTime: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
-                    endTime: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000),
-                    painLevel: 5,
-                    status: 'complete',
-                    locations: ['both_sides'],
-                    triggers: ['weather_change'],
-                    symptoms: ['dizziness'],
-                    medications: ['Ibuprofen 400mg'],
-                    effectiveness: 50,
-                    notes: 'Weather front moving in'
-                },
-                {
-                    id: generateId(),
-                    timestamp: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000),
-                    startTime: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000),
-                    endTime: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000),
-                    painLevel: 6,
-                    status: 'complete',
-                    locations: ['right_side'],
-                    triggers: ['bright_lights', 'dehydration'],
-                    symptoms: ['nausea', 'photophobia'],
-                    medications: ['Sumatriptan 50mg'],
-                    effectiveness: 80,
-                    notes: 'After long screen time'
-                },
-                {
-                    id: generateId(),
-                    timestamp: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
-                    startTime: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
-                    endTime: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
-                    painLevel: 8,
-                    status: 'complete',
-                    locations: ['left_side', 'back_head'],
-                    triggers: ['hormonal', 'lack_sleep'],
-                    symptoms: ['nausea', 'vomiting', 'photophobia'],
-                    medications: ['Sumatriptan 50mg'],
-                    effectiveness: 70,
-                    notes: 'Severe episode'
-                },
-                {
-                    id: generateId(),
-                    timestamp: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000),
-                    startTime: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000),
-                    endTime: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
-                    painLevel: 4,
-                    status: 'complete',
-                    locations: ['forehead'],
-                    triggers: ['certain_foods'],
-                    symptoms: ['fatigue'],
-                    medications: ['Ibuprofen 400mg'],
-                    effectiveness: 60,
-                    notes: 'After eating chocolate'
-                }
-            ];
+            migraines = [];
             saveMigraines();
         }
 
@@ -1606,7 +1505,7 @@
             });
 
             // Update medication effectiveness display
-            const medicationsContainer = document.querySelector('#analytics-view .space-y-4');
+            const medicationsContainer = document.getElementById('medications-container');
             if (medicationsContainer) {
                 const medicationEntries = Object.entries(medicationStats);
                 if (medicationEntries.length > 0) {
@@ -1635,7 +1534,7 @@
             }
 
             // Update non-pharmacological interventions
-            const reliefContainer = document.querySelector('#analytics-view .space-y-3');
+            const reliefContainer = document.getElementById('relief-methods-container');
             if (reliefContainer) {
                 const reliefEntries = Object.entries(reliefStats);
                 if (reliefEntries.length > 0) {
@@ -2293,5 +2192,5 @@ Your Patient`;
         // Start the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96984954f1b587fe',t:'MTc1NDI1MDAyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96985198d107bc9a',t:'MTc1NDI1MDM2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
