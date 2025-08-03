@@ -235,10 +235,10 @@
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <p id="this-month-label" class="text-sm font-medium text-gray-600 mb-1">This Month</p>
-                            <p class="text-3xl font-bold text-gray-900">3</p>
-                            <p id="month-trend" class="text-xs mt-2 flex items-center text-red-600">
-                                <span class="mr-1">📈</span>
-                                +1 from last month
+                            <p id="this-month-count" class="text-3xl font-bold text-gray-900">0</p>
+                            <p id="month-trend" class="text-xs mt-2 flex items-center">
+                                <span id="trend-icon" class="mr-1">📊</span>
+                                <span id="trend-text">vs last month</span>
                             </p>
                         </div>
                         <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -251,8 +251,8 @@
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <p id="avg-intensity-label" class="text-sm font-medium text-gray-600 mb-1">Avg Intensity</p>
-                            <p class="text-3xl font-bold text-gray-900">6.0</p>
-                            <p id="severity-text" class="text-xs mt-2 text-gray-600">Moderate severity</p>
+                            <p id="avg-intensity-value" class="text-3xl font-bold text-gray-900">0</p>
+                            <p id="severity-text" class="text-xs mt-2 text-gray-600">No data</p>
                         </div>
                         <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
                             <span class="text-white">📊</span>
@@ -264,8 +264,8 @@
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <p id="top-trigger-label" class="text-sm font-medium text-gray-600 mb-1">Top Trigger</p>
-                            <p class="text-3xl font-bold text-gray-900">Work Stress</p>
-                            <p id="correlation-text" class="text-xs mt-2 text-gray-600">67% correlation</p>
+                            <p id="top-trigger-value" class="text-3xl font-bold text-gray-900">No data</p>
+                            <p id="correlation-text" class="text-xs mt-2 text-gray-600">No correlation data</p>
                         </div>
                         <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                             <span class="text-white">🎯</span>
@@ -421,6 +421,10 @@
                         <span class="mr-2">📧</span>
                         <span id="email-doctor-text">Email to Doctor</span>
                     </button>
+                    <button id="export-data-btn" class="bg-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center shadow-lg">
+                        <span class="mr-2">💾</span>
+                        <span id="export-data-text">Export Data (CSV)</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -470,13 +474,46 @@
             </div>
 
             <div class="space-y-6">
+                <!-- Exact Date and Time -->
                 <div>
                     <label id="when-start-label" class="block text-sm font-medium text-gray-700 mb-3">When did it start?</label>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Date</label>
+                            <input type="date" id="quick-date" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Time</label>
+                            <input type="time" id="quick-time" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 gap-2">
                         <button class="selection-button selected" data-time="now" id="time-now">Now</button>
                         <button class="selection-button" data-time="5min" id="time-5min">5 mins ago</button>
                         <button class="selection-button" data-time="15min" id="time-15min">15 mins ago</button>
                         <button class="selection-button" data-time="30min" id="time-30min">30 mins ago</button>
+                    </div>
+                </div>
+
+                <!-- Pain Location -->
+                <div>
+                    <label id="pain-location-quick-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Location</label>
+                    <div class="grid grid-cols-2 gap-2" id="quick-location-buttons">
+                        <button class="selection-button" data-location="left_side" id="quick-loc-left">Left Side</button>
+                        <button class="selection-button" data-location="right_side" id="quick-loc-right">Right Side</button>
+                        <button class="selection-button" data-location="both_sides" id="quick-loc-both">Both Sides</button>
+                        <button class="selection-button" data-location="forehead" id="quick-loc-forehead">Forehead</button>
+                    </div>
+                </div>
+
+                <!-- Pain Character -->
+                <div>
+                    <label id="pain-character-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Character</label>
+                    <div class="grid grid-cols-2 gap-2" id="character-buttons">
+                        <button class="selection-button" data-character="throbbing" id="char-throbbing">Throbbing</button>
+                        <button class="selection-button" data-character="sharp" id="char-sharp">Sharp</button>
+                        <button class="selection-button" data-character="dull" id="char-dull">Dull Ache</button>
+                        <button class="selection-button" data-character="pressure" id="char-pressure">Pressure</button>
                     </div>
                 </div>
 
@@ -493,6 +530,17 @@
                     </div>
                     <div class="text-center mt-4">
                         <span id="pain-level-display" class="text-3xl font-bold text-gray-900">5</span>
+                    </div>
+                </div>
+
+                <!-- Associated Symptoms -->
+                <div>
+                    <label id="quick-symptoms-label" class="block text-sm font-medium text-gray-700 mb-3">Associated Symptoms</label>
+                    <div class="grid grid-cols-2 gap-2" id="quick-symptom-buttons">
+                        <button class="selection-button" data-symptom="nausea" id="quick-symp-nausea">Nausea</button>
+                        <button class="selection-button" data-symptom="vomiting" id="quick-symp-vomiting">Vomiting</button>
+                        <button class="selection-button" data-symptom="photophobia" id="quick-symp-light">Light Sensitivity</button>
+                        <button class="selection-button" data-symptom="phonophobia" id="quick-symp-sound">Sound Sensitivity</button>
                     </div>
                 </div>
             </div>
@@ -518,6 +566,39 @@
             </div>
 
             <div class="p-6 space-y-8">
+                <!-- Exact Date and Time -->
+                <div>
+                    <label id="detailed-when-start-label" class="block text-sm font-medium text-gray-700 mb-3">When did it start?</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Date</label>
+                            <input type="date" id="detailed-date" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Time</label>
+                            <input type="time" id="detailed-time" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aura -->
+                <div>
+                    <label id="aura-label" class="block text-sm font-medium text-gray-700 mb-3">Did you experience aura?</label>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button class="selection-button" data-aura="yes" id="aura-yes">Yes</button>
+                        <button class="selection-button" data-aura="no" id="aura-no">No</button>
+                    </div>
+                    <div id="aura-details" class="hidden">
+                        <label class="block text-xs text-gray-500 mb-2">Aura Details</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="selection-button" data-aura-type="visual" id="aura-visual">Visual</button>
+                            <button class="selection-button" data-aura-type="sensory" id="aura-sensory">Sensory</button>
+                            <button class="selection-button" data-aura-type="speech" id="aura-speech">Speech</button>
+                            <button class="selection-button" data-aura-type="motor" id="aura-motor">Motor</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pain Level -->
                 <div>
                     <label id="detailed-pain-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Intensity</label>
@@ -537,6 +618,19 @@
                         <button class="selection-button" data-location="forehead" id="loc-forehead">Forehead</button>
                         <button class="selection-button" data-location="back_head" id="loc-back">Back of Head</button>
                         <button class="selection-button" data-location="top_head" id="loc-top">Top of Head</button>
+                    </div>
+                </div>
+
+                <!-- Pain Character -->
+                <div>
+                    <label id="detailed-pain-character-label" class="block text-sm font-medium text-gray-700 mb-3">Pain Character</label>
+                    <div class="grid grid-cols-2 gap-2" id="detailed-character-buttons">
+                        <button class="selection-button" data-character="throbbing" id="detailed-char-throbbing">Throbbing</button>
+                        <button class="selection-button" data-character="sharp" id="detailed-char-sharp">Sharp</button>
+                        <button class="selection-button" data-character="dull" id="detailed-char-dull">Dull Ache</button>
+                        <button class="selection-button" data-character="pressure" id="detailed-char-pressure">Pressure</button>
+                        <button class="selection-button" data-character="burning" id="detailed-char-burning">Burning</button>
+                        <button class="selection-button" data-character="stabbing" id="detailed-char-stabbing">Stabbing</button>
                     </div>
                 </div>
 
@@ -568,6 +662,72 @@
                         <button class="selection-button" data-symptom="confusion" id="symp-confusion">Confusion</button>
                         <button class="selection-button" data-symptom="mood_changes" id="symp-mood">Mood Changes</button>
                     </div>
+                </div>
+
+                <!-- Medications Taken -->
+                <div>
+                    <label id="medications-taken-label" class="block text-sm font-medium text-gray-700 mb-3">Medications Taken</label>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="med-sumatriptan" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <label for="med-sumatriptan" class="text-sm text-gray-700">Sumatriptan 50mg</label>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="med-ibuprofen" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <label for="med-ibuprofen" class="text-sm text-gray-700">Ibuprofen 400mg</label>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="med-acetaminophen" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <label for="med-acetaminophen" class="text-sm text-gray-700">Acetaminophen 500mg</label>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="med-other" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <input type="text" id="med-other-text" placeholder="Other medication..." class="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relief Methods -->
+                <div>
+                    <label id="relief-methods-label" class="block text-sm font-medium text-gray-700 mb-3">What helped with relief?</label>
+                    <div class="grid grid-cols-2 gap-2" id="relief-buttons">
+                        <button class="selection-button" data-relief="rest" id="relief-rest">Rest/Sleep</button>
+                        <button class="selection-button" data-relief="dark_room" id="relief-dark">Dark Room</button>
+                        <button class="selection-button" data-relief="cold_compress" id="relief-cold">Cold Compress</button>
+                        <button class="selection-button" data-relief="heat_pack" id="relief-heat">Heat Pack</button>
+                        <button class="selection-button" data-relief="massage" id="relief-massage">Massage</button>
+                        <button class="selection-button" data-relief="hydration" id="relief-hydration">Hydration</button>
+                    </div>
+                </div>
+
+                <!-- Effectiveness Rating -->
+                <div id="effectiveness-section" class="hidden">
+                    <label id="effectiveness-label" class="block text-sm font-medium text-gray-700 mb-3">How effective was the treatment? (0-100%)</label>
+                    <input type="range" min="0" max="100" value="50" id="effectiveness-slider" class="w-full h-3 bg-gradient-to-r from-red-500 to-green-500 rounded-lg appearance-none cursor-pointer">
+                    <div class="text-center mt-2">
+                        <span id="effectiveness-display" class="text-2xl font-bold text-gray-900">50%</span>
+                    </div>
+                </div>
+
+                <!-- Duration -->
+                <div>
+                    <label id="duration-label" class="block text-sm font-medium text-gray-700 mb-3">Duration (if ended)</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Hours</label>
+                            <input type="number" id="duration-hours" min="0" max="72" placeholder="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Minutes</label>
+                            <input type="number" id="duration-minutes" min="0" max="59" placeholder="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label id="notes-label" class="block text-sm font-medium text-gray-700 mb-3">Additional Notes</label>
+                    <textarea id="migraine-notes" rows="3" placeholder="Any additional details about this migraine episode..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
                 </div>
             </div>
 
@@ -685,6 +845,7 @@
                 reportGenerated: "Report generated and downloaded!",
                 noDataReport: "No migraine data available to generate a report. Please log some migraines first.",
                 enterDoctorEmail: "Enter your doctor's email address:",
+                exportData: "Export Data (CSV)",
                 language: "Language"
             },
             hi: {
@@ -789,6 +950,7 @@
                 reportGenerated: "रिपोर्ट तैयार और डाउनलोड हो गई!",
                 noDataReport: "रिपोर्ट तैयार करने के लिए कोई माइग्रेन डेटा उपलब्ध नहीं है। कृपया पहले कुछ माइग्रेन लॉग करें।",
                 enterDoctorEmail: "अपने डॉक्टर का ईमेल पता दर्ज करें:",
+                exportData: "डेटा निर्यात करें (CSV)",
                 language: "भाषा"
             }
         };
@@ -796,33 +958,173 @@
         // Global state
         let currentLanguage = localStorage.getItem('language') || 'en';
         let currentView = 'dashboard';
-        let migraines = JSON.parse(localStorage.getItem('migraines')) || [];
+        let migraines = [];
 
-        // Initialize sample data if empty
-        if (migraines.length === 0) {
+        // Data persistence functions
+        function loadMigraines() {
+            try {
+                const stored = localStorage.getItem('migraines');
+                if (stored) {
+                    migraines = JSON.parse(stored).map(m => ({
+                        ...m,
+                        startTime: new Date(m.startTime),
+                        timestamp: new Date(m.timestamp)
+                    }));
+                } else {
+                    // Initialize with sample data for demo
+                    initializeSampleData();
+                }
+            } catch (error) {
+                console.error('Error loading migraines:', error);
+                initializeSampleData();
+            }
+        }
+
+        function saveMigraines() {
+            try {
+                localStorage.setItem('migraines', JSON.stringify(migraines));
+            } catch (error) {
+                console.error('Error saving migraines:', error);
+                alert('Error saving data. Storage might be full.');
+            }
+        }
+
+        function initializeSampleData() {
+            const now = new Date();
             migraines = [
                 {
-                    id: '1',
-                    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                    startTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+                    id: generateId(),
+                    timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+                    startTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
                     painLevel: 7,
                     status: 'complete',
                     locations: ['left_side', 'forehead'],
                     triggers: ['work_stress', 'lack_sleep'],
-                    symptoms: ['nausea', 'photophobia']
+                    symptoms: ['nausea', 'photophobia'],
+                    medications: ['Sumatriptan 50mg'],
+                    effectiveness: 75,
+                    notes: 'Started during work meeting'
                 },
                 {
-                    id: '2',
-                    timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-                    startTime: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+                    id: generateId(),
+                    timestamp: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+                    startTime: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000),
                     painLevel: 5,
                     status: 'complete',
                     locations: ['both_sides'],
                     triggers: ['weather_change'],
-                    symptoms: ['dizziness']
+                    symptoms: ['dizziness'],
+                    medications: ['Ibuprofen 400mg'],
+                    effectiveness: 50,
+                    notes: 'Weather front moving in'
+                },
+                {
+                    id: generateId(),
+                    timestamp: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000),
+                    startTime: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000),
+                    painLevel: 6,
+                    status: 'complete',
+                    locations: ['right_side'],
+                    triggers: ['bright_lights', 'dehydration'],
+                    symptoms: ['nausea', 'photophobia'],
+                    medications: ['Sumatriptan 50mg'],
+                    effectiveness: 80,
+                    notes: 'After long screen time'
+                },
+                {
+                    id: generateId(),
+                    timestamp: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
+                    startTime: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
+                    painLevel: 8,
+                    status: 'complete',
+                    locations: ['left_side', 'back_head'],
+                    triggers: ['hormonal', 'lack_sleep'],
+                    symptoms: ['nausea', 'vomiting', 'photophobia'],
+                    medications: ['Sumatriptan 50mg'],
+                    effectiveness: 70,
+                    notes: 'Severe episode'
+                },
+                {
+                    id: generateId(),
+                    timestamp: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000),
+                    startTime: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
+                    painLevel: 4,
+                    status: 'complete',
+                    locations: ['forehead'],
+                    triggers: ['certain_foods'],
+                    symptoms: ['fatigue'],
+                    medications: ['Ibuprofen 400mg'],
+                    effectiveness: 60,
+                    notes: 'After eating chocolate'
                 }
             ];
-            localStorage.setItem('migraines', JSON.stringify(migraines));
+            saveMigraines();
+        }
+
+        function generateId() {
+            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Analytics functions
+        function getWeeklyData() {
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return migraines.filter(m => m.startTime >= weekAgo);
+        }
+
+        function getMonthlyData() {
+            const now = new Date();
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            return migraines.filter(m => m.startTime >= monthAgo);
+        }
+
+        function getThisMonthData() {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            return migraines.filter(m => m.startTime >= startOfMonth);
+        }
+
+        function getLastMonthData() {
+            const now = new Date();
+            const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            return migraines.filter(m => m.startTime >= startOfLastMonth && m.startTime <= endOfLastMonth);
+        }
+
+        function calculateAverageIntensity(data) {
+            if (data.length === 0) return 0;
+            return (data.reduce((sum, m) => sum + m.painLevel, 0) / data.length).toFixed(1);
+        }
+
+        function getMostCommonTrigger(data) {
+            if (data.length === 0) return 'No data';
+            
+            const triggerCounts = {};
+            data.forEach(m => {
+                if (m.triggers) {
+                    m.triggers.forEach(trigger => {
+                        triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+                    });
+                }
+            });
+
+            const mostCommon = Object.entries(triggerCounts).sort((a, b) => b[1] - a[1])[0];
+            return mostCommon ? mostCommon[0] : 'No data';
+        }
+
+        function getDaysSinceLast() {
+            if (migraines.length === 0) return 0;
+            
+            const sortedMigraines = [...migraines].sort((a, b) => b.startTime - a.startTime);
+            const lastMigraine = sortedMigraines[0];
+            const now = new Date();
+            const diffTime = Math.abs(now - lastMigraine.startTime);
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
         }
 
         // Translation function
@@ -874,6 +1176,7 @@
                 'report-includes-title': 'reportIncludes',
                 'generate-report-text': 'generateReport',
                 'email-doctor-text': 'emailDoctor',
+                'export-data-text': 'exportData',
                 'settings-title': 'settingsTitle',
                 'settings-subtitle': 'settingsSubtitle',
                 'my-medications-title': 'myMedications',
@@ -1016,11 +1319,34 @@
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
+                    
+                    // Auto-fill date/time inputs based on selection
+                    const now = new Date();
+                    let targetTime = new Date(now);
+                    
+                    switch(btn.dataset.time) {
+                        case '5min': targetTime = new Date(now.getTime() - 5 * 60000); break;
+                        case '15min': targetTime = new Date(now.getTime() - 15 * 60000); break;
+                        case '30min': targetTime = new Date(now.getTime() - 30 * 60000); break;
+                    }
+                    
+                    // Update quick log inputs
+                    const quickDate = document.getElementById('quick-date');
+                    const quickTime = document.getElementById('quick-time');
+                    if (quickDate) quickDate.value = targetTime.toISOString().split('T')[0];
+                    if (quickTime) quickTime.value = targetTime.toTimeString().slice(0, 5);
                 });
             });
 
             // Location selection buttons
             document.querySelectorAll('[data-location]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
+                });
+            });
+
+            // Character selection buttons
+            document.querySelectorAll('[data-character]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     btn.classList.toggle('selected');
                 });
@@ -1039,6 +1365,43 @@
                     btn.classList.toggle('selected');
                 });
             });
+
+            // Relief method buttons
+            document.querySelectorAll('[data-relief]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
+                    // Show effectiveness section if any relief method is selected
+                    const selectedReliefs = document.querySelectorAll('[data-relief].selected');
+                    const effectivenessSection = document.getElementById('effectiveness-section');
+                    if (selectedReliefs.length > 0) {
+                        effectivenessSection.classList.remove('hidden');
+                    } else {
+                        effectivenessSection.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Aura buttons
+            document.querySelectorAll('[data-aura]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-aura]').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    
+                    const auraDetails = document.getElementById('aura-details');
+                    if (btn.dataset.aura === 'yes') {
+                        auraDetails.classList.remove('hidden');
+                    } else {
+                        auraDetails.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Aura type buttons
+            document.querySelectorAll('[data-aura-type]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('selected');
+                });
+            });
         }
 
         // Pain slider functionality
@@ -1047,25 +1410,172 @@
             const quickDisplay = document.getElementById('pain-level-display');
             const detailedSlider = document.getElementById('detailed-pain-slider');
             const detailedDisplay = document.getElementById('detailed-pain-display');
+            const effectivenessSlider = document.getElementById('effectiveness-slider');
+            const effectivenessDisplay = document.getElementById('effectiveness-display');
 
-            quickSlider.addEventListener('input', (e) => {
-                quickDisplay.textContent = e.target.value;
-            });
+            if (quickSlider && quickDisplay) {
+                quickSlider.addEventListener('input', (e) => {
+                    quickDisplay.textContent = e.target.value;
+                });
+            }
 
-            detailedSlider.addEventListener('input', (e) => {
-                detailedDisplay.textContent = e.target.value + '/10';
-            });
+            if (detailedSlider && detailedDisplay) {
+                detailedSlider.addEventListener('input', (e) => {
+                    detailedDisplay.textContent = e.target.value + '/10';
+                });
+            }
+
+            if (effectivenessSlider && effectivenessDisplay) {
+                effectivenessSlider.addEventListener('input', (e) => {
+                    effectivenessDisplay.textContent = e.target.value + '%';
+                });
+            }
         }
 
         // Save migraine data
         function saveMigraine(data) {
             const migraine = {
-                id: Date.now().toString(),
-                timestamp: new Date().toISOString(),
+                id: generateId(),
+                timestamp: new Date(),
                 ...data
             };
             migraines.push(migraine);
-            localStorage.setItem('migraines', JSON.stringify(migraines));
+            saveMigraines();
+            updateDashboard();
+            updateRecentEntries();
+        }
+
+        // Update dashboard statistics
+        function updateDashboard() {
+            const thisMonthData = getThisMonthData();
+            const lastMonthData = getLastMonthData();
+            const monthlyData = getMonthlyData();
+            
+            // Update this month count
+            document.getElementById('this-month-count').textContent = thisMonthData.length;
+            
+            // Update trend
+            const trendDiff = thisMonthData.length - lastMonthData.length;
+            const trendIcon = document.getElementById('trend-icon');
+            const trendText = document.getElementById('trend-text');
+            
+            if (trendDiff > 0) {
+                trendIcon.textContent = '📈';
+                trendText.textContent = `+${trendDiff} from last month`;
+                trendText.parentElement.className = 'text-xs mt-2 flex items-center text-red-600';
+            } else if (trendDiff < 0) {
+                trendIcon.textContent = '📉';
+                trendText.textContent = `${trendDiff} from last month`;
+                trendText.parentElement.className = 'text-xs mt-2 flex items-center text-green-600';
+            } else {
+                trendIcon.textContent = '📊';
+                trendText.textContent = 'Same as last month';
+                trendText.parentElement.className = 'text-xs mt-2 flex items-center text-gray-600';
+            }
+            
+            // Update average intensity
+            const avgIntensity = calculateAverageIntensity(monthlyData);
+            document.getElementById('avg-intensity-value').textContent = avgIntensity;
+            
+            const severityText = document.getElementById('severity-text');
+            if (avgIntensity == 0) {
+                severityText.textContent = t('noData');
+            } else if (avgIntensity <= 3) {
+                severityText.textContent = t('mildSeverity');
+            } else if (avgIntensity <= 6) {
+                severityText.textContent = t('moderateSeverity');
+            } else {
+                severityText.textContent = t('highSeverity');
+            }
+            
+            // Update top trigger
+            const topTrigger = getMostCommonTrigger(monthlyData);
+            const topTriggerElement = document.getElementById('top-trigger-value');
+            const correlationElement = document.getElementById('correlation-text');
+            
+            if (topTrigger === 'No data') {
+                topTriggerElement.textContent = t('noData');
+                correlationElement.textContent = t('noData');
+            } else {
+                // Translate trigger name
+                const triggerTranslations = {
+                    'work_stress': t('workStress'),
+                    'lack_sleep': t('lackSleep'),
+                    'weather_change': t('weatherChange'),
+                    'bright_lights': t('brightLights'),
+                    'loud_sounds': t('loudSounds'),
+                    'certain_foods': t('certainFoods'),
+                    'hormonal': t('hormonal'),
+                    'dehydration': t('dehydration')
+                };
+                
+                topTriggerElement.textContent = triggerTranslations[topTrigger] || topTrigger;
+                
+                // Calculate correlation percentage
+                const triggerCount = monthlyData.filter(m => m.triggers && m.triggers.includes(topTrigger)).length;
+                const correlation = Math.round((triggerCount / monthlyData.length) * 100);
+                correlationElement.textContent = `${correlation}% ${t('correlation')}`;
+            }
+            
+            // Update migraine-free days
+            const daysSince = getDaysSinceLast();
+            const migraineFreeElement = document.getElementById('migraine-free-text');
+            migraineFreeElement.textContent = `${daysSince} ${t('migraineFree')}`;
+        }
+
+        // Update recent entries list
+        function updateRecentEntries() {
+            const recentList = document.getElementById('recent-entries-list');
+            const recentMigraines = [...migraines]
+                .sort((a, b) => b.startTime - a.startTime)
+                .slice(0, 5);
+            
+            if (recentMigraines.length === 0) {
+                recentList.innerHTML = `
+                    <div class="p-6 text-center text-gray-500">
+                        <p>${t('noEntries')}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentList.innerHTML = recentMigraines.map(migraine => {
+                const date = migraine.startTime.toLocaleDateString();
+                const time = migraine.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                const locationText = migraine.locations ? 
+                    migraine.locations.map(loc => {
+                        const locationTranslations = {
+                            'left_side': t('leftSide'),
+                            'right_side': t('rightSide'),
+                            'both_sides': t('bothSides'),
+                            'forehead': t('forehead'),
+                            'back_head': t('backHead'),
+                            'top_head': t('topHead')
+                        };
+                        return locationTranslations[loc] || loc;
+                    }).join(', ') : '';
+                
+                const statusClass = migraine.status === 'complete' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                const statusText = migraine.status === 'complete' ? t('complete') : t('incomplete');
+                
+                return `
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="font-semibold text-gray-900">${t('painLevel')} ${migraine.painLevel}/10</span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    ${date} at ${time}
+                                </div>
+                                ${locationText ? `<div class="text-sm text-gray-500 mt-1">${t('location')}: ${locationText}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Generate doctor report
@@ -1075,27 +1585,157 @@
                 return;
             }
 
+            const thisMonthData = getThisMonthData();
+            const lastMonthData = getLastMonthData();
+            const monthlyData = getMonthlyData();
+            const avgIntensity = calculateAverageIntensity(monthlyData);
+            
+            // Calculate trigger frequencies
+            const triggerCounts = {};
+            monthlyData.forEach(m => {
+                if (m.triggers) {
+                    m.triggers.forEach(trigger => {
+                        triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+                    });
+                }
+            });
+            
+            // Calculate medication effectiveness
+            const medicationStats = {};
+            migraines.forEach(m => {
+                if (m.medications && m.effectiveness !== null && m.effectiveness !== undefined) {
+                    m.medications.forEach(med => {
+                        if (!medicationStats[med]) {
+                            medicationStats[med] = { total: 0, effectiveness: 0, count: 0 };
+                        }
+                        medicationStats[med].total += m.effectiveness;
+                        medicationStats[med].count += 1;
+                        medicationStats[med].effectiveness = medicationStats[med].total / medicationStats[med].count;
+                    });
+                }
+            });
+
             const reportContent = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Migraine Medical Report</title>
                     <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                        .section { margin-bottom: 30px; }
-                        .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+                        .header { text-align: center; border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }
+                        .header h1 { color: #6366f1; margin: 0; font-size: 24px; }
+                        .section { margin-bottom: 30px; page-break-inside: avoid; }
+                        .section h2 { color: #4f46e5; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+                        .section h3 { color: #6b7280; margin-bottom: 10px; }
+                        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+                        .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
+                        .stat-value { font-size: 24px; font-weight: bold; color: #1e40af; }
+                        .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; }
+                        .migraine-entry { background: #fafafa; border-left: 4px solid #ef4444; padding: 15px; margin: 10px 0; border-radius: 4px; }
+                        .entry-header { font-weight: bold; color: #dc2626; margin-bottom: 8px; }
+                        .entry-details { font-size: 14px; color: #4b5563; }
+                        .medication-item { background: #f0f9ff; border: 1px solid #bae6fd; padding: 10px; margin: 5px 0; border-radius: 4px; }
+                        .effectiveness-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+                        .effectiveness-fill { height: 100%; background: linear-gradient(to right, #ef4444, #f59e0b, #10b981); }
+                        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+                        th { background: #f3f4f6; font-weight: bold; }
+                        .trigger-item { display: inline-block; background: #fef3c7; color: #92400e; padding: 4px 8px; margin: 2px; border-radius: 12px; font-size: 12px; }
+                        @media print { body { margin: 20px; } .section { page-break-inside: avoid; } }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                        <h1>MIGRAINE TRACKER - COMPREHENSIVE MEDICAL REPORT</h1>
-                        <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                        <h1>🧠 MIGRAINE TRACKER - COMPREHENSIVE MEDICAL REPORT</h1>
+                        <p><strong>Report Generated:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                        <p><strong>Reporting Period:</strong> ${migraines.length > 0 ? migraines[migraines.length - 1].startTime.toLocaleDateString() : 'N/A'} - ${new Date().toLocaleDateString()}</p>
                     </div>
+
                     <div class="section">
-                        <h2>PATIENT SUMMARY</h2>
-                        <p><strong>Total Migraines Recorded:</strong> ${migraines.length}</p>
-                        <p><strong>Average Pain Intensity:</strong> ${(migraines.reduce((sum, m) => sum + m.painLevel, 0) / migraines.length).toFixed(1)}/10</p>
+                        <h2>📊 EXECUTIVE SUMMARY</h2>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">${migraines.length}</div>
+                                <div class="stat-label">Total Episodes</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${thisMonthData.length}</div>
+                                <div class="stat-label">This Month</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${avgIntensity}/10</div>
+                                <div class="stat-label">Avg Intensity</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${getDaysSinceLast()}</div>
+                                <div class="stat-label">Days Since Last</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>🎯 TRIGGER ANALYSIS</h2>
+                        <p><strong>Most Common Triggers (Last 30 Days):</strong></p>
+                        ${Object.entries(triggerCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 5)
+                            .map(([trigger, count]) => {
+                                const percentage = Math.round((count / monthlyData.length) * 100);
+                                return `<div class="trigger-item">${trigger.replace(/_/g, ' ').toUpperCase()}: ${count} episodes (${percentage}%)</div>`;
+                            }).join('')}
+                    </div>
+
+                    <div class="section">
+                        <h2>💊 MEDICATION EFFECTIVENESS</h2>
+                        ${Object.entries(medicationStats).length > 0 ? 
+                            Object.entries(medicationStats).map(([med, stats]) => `
+                                <div class="medication-item">
+                                    <strong>${med}</strong> - Used ${stats.count} times
+                                    <div class="effectiveness-bar">
+                                        <div class="effectiveness-fill" style="width: ${stats.effectiveness}%"></div>
+                                    </div>
+                                    <small>Average Effectiveness: ${Math.round(stats.effectiveness)}%</small>
+                                </div>
+                            `).join('') : 
+                            '<p>No medication effectiveness data recorded.</p>'
+                        }
+                    </div>
+
+                    <div class="section">
+                        <h2>📅 RECENT MIGRAINE EPISODES</h2>
+                        ${migraines.slice(-10).reverse().map(migraine => `
+                            <div class="migraine-entry">
+                                <div class="entry-header">
+                                    ${migraine.startTime.toLocaleDateString()} at ${migraine.startTime.toLocaleTimeString()} - Pain Level: ${migraine.painLevel}/10
+                                </div>
+                                <div class="entry-details">
+                                    ${migraine.locations ? `<strong>Location:</strong> ${migraine.locations.join(', ')}<br>` : ''}
+                                    ${migraine.characters ? `<strong>Character:</strong> ${migraine.characters.join(', ')}<br>` : ''}
+                                    ${migraine.triggers ? `<strong>Triggers:</strong> ${migraine.triggers.join(', ')}<br>` : ''}
+                                    ${migraine.symptoms ? `<strong>Symptoms:</strong> ${migraine.symptoms.join(', ')}<br>` : ''}
+                                    ${migraine.medications ? `<strong>Medications:</strong> ${migraine.medications.join(', ')}<br>` : ''}
+                                    ${migraine.duration ? `<strong>Duration:</strong> ${Math.floor(migraine.duration / 60)}h ${migraine.duration % 60}m<br>` : ''}
+                                    ${migraine.effectiveness ? `<strong>Treatment Effectiveness:</strong> ${migraine.effectiveness}%<br>` : ''}
+                                    ${migraine.notes ? `<strong>Notes:</strong> ${migraine.notes}` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="section">
+                        <h2>📋 CLINICAL RECOMMENDATIONS</h2>
+                        <ul>
+                            <li><strong>Frequency Assessment:</strong> ${thisMonthData.length > lastMonthData.length ? 'Increasing frequency - consider preventive treatment' : 'Stable/decreasing frequency'}</li>
+                            <li><strong>Intensity Concern:</strong> ${avgIntensity > 7 ? 'High average intensity - may need stronger acute treatment' : avgIntensity > 4 ? 'Moderate intensity - current treatment may be adequate' : 'Low intensity episodes'}</li>
+                            <li><strong>Pattern Recognition:</strong> ${Object.keys(triggerCounts).length > 0 ? `Primary triggers identified: ${Object.keys(triggerCounts).slice(0, 3).join(', ')}` : 'No clear trigger patterns identified'}</li>
+                            <li><strong>Treatment Response:</strong> ${Object.keys(medicationStats).length > 0 ? 'Medication effectiveness data available for review' : 'Consider tracking medication effectiveness'}</li>
+                        </ul>
+                    </div>
+
+                    <div class="section">
+                        <h2>⚠️ IMPORTANT NOTES</h2>
+                        <p><em>This report is generated from patient self-reported data using a digital migraine tracking application. All information should be verified during clinical consultation. This data is intended to supplement, not replace, professional medical assessment.</em></p>
+                        <p><strong>Data Accuracy:</strong> Patient-reported • <strong>Tracking Period:</strong> ${Math.ceil((new Date() - migraines[migraines.length - 1]?.startTime) / (1000 * 60 * 60 * 24))} days • <strong>Compliance:</strong> ${migraines.length} entries recorded</p>
                     </div>
                 </body>
                 </html>
@@ -1105,7 +1745,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `migraine-report-${new Date().toISOString().split('T')[0]}.html`;
+            link.download = `migraine-medical-report-${new Date().toISOString().split('T')[0]}.html`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1135,10 +1775,70 @@ Your Patient`;
             window.location.href = mailtoLink;
         }
 
+        // Export data as CSV
+        function exportDataAsCSV() {
+            if (migraines.length === 0) {
+                alert(t('noDataReport'));
+                return;
+            }
+
+            const headers = [
+                'Date', 'Time', 'Pain Level', 'Duration (hours)', 'Status', 
+                'Locations', 'Triggers', 'Symptoms', 'Medications', 'Effectiveness (%)', 'Notes'
+            ];
+
+            const csvData = migraines.map(migraine => {
+                const date = migraine.startTime.toLocaleDateString();
+                const time = migraine.startTime.toLocaleTimeString();
+                const duration = migraine.endTime ? 
+                    ((migraine.endTime - migraine.startTime) / (1000 * 60 * 60)).toFixed(1) : 'Ongoing';
+                
+                return [
+                    date,
+                    time,
+                    migraine.painLevel,
+                    duration,
+                    migraine.status,
+                    (migraine.locations || []).join('; '),
+                    (migraine.triggers || []).join('; '),
+                    (migraine.symptoms || []).join('; '),
+                    (migraine.medications || []).join('; '),
+                    migraine.effectiveness || '',
+                    migraine.notes || ''
+                ].map(field => `"${field}"`).join(',');
+            });
+
+            const csvContent = [headers.join(','), ...csvData].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `migraine-data-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('CSV data exported successfully!');
+        }
+
         // Initialize the app
         function init() {
+            // Load data first
+            loadMigraines();
+            
             // Set up language
             updateLanguage();
+            
+            // Initialize forms with current date/time
+            initializeForms();
+            
+            // Update dashboard with loaded data
+            updateDashboard();
+            updateRecentEntries();
 
             // Set up navigation
             document.getElementById('nav-dashboard').addEventListener('click', () => showView('dashboard'));
@@ -1153,8 +1853,14 @@ Your Patient`;
             });
 
             // Set up modal triggers
-            document.getElementById('quick-log-btn').addEventListener('click', () => showModal('quick-log-modal'));
-            document.getElementById('detailed-log-btn').addEventListener('click', () => showModal('detailed-log-modal'));
+            document.getElementById('quick-log-btn').addEventListener('click', () => {
+                initializeForms();
+                showModal('quick-log-modal');
+            });
+            document.getElementById('detailed-log-btn').addEventListener('click', () => {
+                initializeForms();
+                showModal('detailed-log-modal');
+            });
 
             // Set up modal close buttons
             document.getElementById('quick-log-cancel').addEventListener('click', () => hideModal('quick-log-modal'));
@@ -1162,41 +1868,111 @@ Your Patient`;
 
             // Set up save buttons
             document.getElementById('quick-log-save').addEventListener('click', () => {
-                const painLevel = parseInt(document.getElementById('pain-slider').value);
-                const selectedTime = document.querySelector('[data-time].selected').dataset.time;
+                // Get date and time
+                const dateInput = document.getElementById('quick-date').value;
+                const timeInput = document.getElementById('quick-time').value;
                 
-                let startTime = new Date();
-                switch(selectedTime) {
-                    case '5min': startTime = new Date(Date.now() - 5 * 60000); break;
-                    case '15min': startTime = new Date(Date.now() - 15 * 60000); break;
-                    case '30min': startTime = new Date(Date.now() - 30 * 60000); break;
+                let startTime;
+                if (dateInput && timeInput) {
+                    startTime = new Date(`${dateInput}T${timeInput}`);
+                } else {
+                    const selectedTime = document.querySelector('[data-time].selected')?.dataset.time || 'now';
+                    startTime = new Date();
+                    switch(selectedTime) {
+                        case '5min': startTime = new Date(Date.now() - 5 * 60000); break;
+                        case '15min': startTime = new Date(Date.now() - 15 * 60000); break;
+                        case '30min': startTime = new Date(Date.now() - 30 * 60000); break;
+                    }
                 }
+
+                const painLevel = parseInt(document.getElementById('pain-slider').value);
+                const locations = Array.from(document.querySelectorAll('#quick-location-buttons [data-location].selected')).map(btn => btn.dataset.location);
+                const characters = Array.from(document.querySelectorAll('#character-buttons [data-character].selected')).map(btn => btn.dataset.character);
+                const symptoms = Array.from(document.querySelectorAll('#quick-symptom-buttons [data-symptom].selected')).map(btn => btn.dataset.symptom);
 
                 saveMigraine({
                     startTime,
                     painLevel,
-                    status: 'incomplete'
+                    locations,
+                    characters,
+                    symptoms,
+                    status: 'quick'
                 });
 
+                // Reset form
+                resetQuickForm();
                 hideModal('quick-log-modal');
                 alert(t('quickEntrySaved'));
             });
 
             document.getElementById('detailed-save').addEventListener('click', () => {
+                // Get date and time
+                const dateInput = document.getElementById('detailed-date').value;
+                const timeInput = document.getElementById('detailed-time').value;
+                
+                let startTime;
+                if (dateInput && timeInput) {
+                    startTime = new Date(`${dateInput}T${timeInput}`);
+                } else {
+                    startTime = new Date();
+                }
+
                 const painLevel = parseInt(document.getElementById('detailed-pain-slider').value);
-                const locations = Array.from(document.querySelectorAll('[data-location].selected')).map(btn => btn.dataset.location);
+                const locations = Array.from(document.querySelectorAll('#location-buttons [data-location].selected')).map(btn => btn.dataset.location);
+                const characters = Array.from(document.querySelectorAll('#detailed-character-buttons [data-character].selected')).map(btn => btn.dataset.character);
                 const triggers = Array.from(document.querySelectorAll('[data-trigger].selected')).map(btn => btn.dataset.trigger);
-                const symptoms = Array.from(document.querySelectorAll('[data-symptom].selected')).map(btn => btn.dataset.symptom);
+                const symptoms = Array.from(document.querySelectorAll('#symptom-buttons [data-symptom].selected')).map(btn => btn.dataset.symptom);
+                const reliefMethods = Array.from(document.querySelectorAll('[data-relief].selected')).map(btn => btn.dataset.relief);
+                
+                // Get aura information
+                const hasAura = document.querySelector('[data-aura].selected')?.dataset.aura === 'yes';
+                const auraTypes = hasAura ? Array.from(document.querySelectorAll('[data-aura-type].selected')).map(btn => btn.dataset.auraType) : [];
+                
+                // Get medications
+                const medications = [];
+                if (document.getElementById('med-sumatriptan').checked) medications.push('Sumatriptan 50mg');
+                if (document.getElementById('med-ibuprofen').checked) medications.push('Ibuprofen 400mg');
+                if (document.getElementById('med-acetaminophen').checked) medications.push('Acetaminophen 500mg');
+                if (document.getElementById('med-other').checked && document.getElementById('med-other-text').value.trim()) {
+                    medications.push(document.getElementById('med-other-text').value.trim());
+                }
+                
+                // Get effectiveness
+                const effectiveness = reliefMethods.length > 0 ? parseInt(document.getElementById('effectiveness-slider').value) : null;
+                
+                // Get duration
+                const durationHours = parseInt(document.getElementById('duration-hours').value) || 0;
+                const durationMinutes = parseInt(document.getElementById('duration-minutes').value) || 0;
+                const totalDurationMinutes = durationHours * 60 + durationMinutes;
+                
+                let endTime = null;
+                if (totalDurationMinutes > 0) {
+                    endTime = new Date(startTime.getTime() + totalDurationMinutes * 60000);
+                }
+                
+                // Get notes
+                const notes = document.getElementById('migraine-notes').value.trim();
 
                 saveMigraine({
-                    startTime: new Date(),
+                    startTime,
+                    endTime,
                     painLevel,
                     locations,
+                    characters,
                     triggers,
                     symptoms,
+                    hasAura,
+                    auraTypes,
+                    medications,
+                    reliefMethods,
+                    effectiveness,
+                    duration: totalDurationMinutes,
+                    notes,
                     status: 'complete'
                 });
 
+                // Reset form
+                resetDetailedForm();
                 hideModal('detailed-log-modal');
                 alert(t('detailedEntrySaved'));
             });
@@ -1204,6 +1980,7 @@ Your Patient`;
             // Set up report buttons
             document.getElementById('generate-report-btn').addEventListener('click', generateDoctorReport);
             document.getElementById('email-doctor-btn').addEventListener('click', emailReport);
+            document.getElementById('export-data-btn').addEventListener('click', exportDataAsCSV);
 
             // Set up selection buttons and sliders
             setupSelectionButtons();
@@ -1219,8 +1996,79 @@ Your Patient`;
             });
         }
 
+        // Form reset functions
+        function resetQuickForm() {
+            // Reset date/time to current
+            const now = new Date();
+            document.getElementById('quick-date').value = now.toISOString().split('T')[0];
+            document.getElementById('quick-time').value = now.toTimeString().slice(0, 5);
+            
+            // Reset pain slider
+            document.getElementById('pain-slider').value = 5;
+            document.getElementById('pain-level-display').textContent = '5';
+            
+            // Reset selections
+            document.querySelectorAll('#quick-location-buttons .selection-button').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('#character-buttons .selection-button').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('#quick-symptom-buttons .selection-button').forEach(btn => btn.classList.remove('selected'));
+            
+            // Reset time buttons
+            document.querySelectorAll('[data-time]').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('time-now').classList.add('selected');
+        }
+
+        function resetDetailedForm() {
+            // Reset date/time to current
+            const now = new Date();
+            document.getElementById('detailed-date').value = now.toISOString().split('T')[0];
+            document.getElementById('detailed-time').value = now.toTimeString().slice(0, 5);
+            
+            // Reset pain slider
+            document.getElementById('detailed-pain-slider').value = 5;
+            document.getElementById('detailed-pain-display').textContent = '5/10';
+            
+            // Reset effectiveness slider
+            document.getElementById('effectiveness-slider').value = 50;
+            document.getElementById('effectiveness-display').textContent = '50%';
+            
+            // Reset all selections
+            document.querySelectorAll('.selection-button').forEach(btn => btn.classList.remove('selected'));
+            
+            // Reset checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            // Reset text inputs
+            document.getElementById('med-other-text').value = '';
+            document.getElementById('duration-hours').value = '';
+            document.getElementById('duration-minutes').value = '';
+            document.getElementById('migraine-notes').value = '';
+            
+            // Hide conditional sections
+            document.getElementById('aura-details').classList.add('hidden');
+            document.getElementById('effectiveness-section').classList.add('hidden');
+        }
+
+        // Initialize forms with current date/time
+        function initializeForms() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().slice(0, 5);
+            
+            // Set quick form defaults
+            const quickDate = document.getElementById('quick-date');
+            const quickTime = document.getElementById('quick-time');
+            if (quickDate) quickDate.value = dateStr;
+            if (quickTime) quickTime.value = timeStr;
+            
+            // Set detailed form defaults
+            const detailedDate = document.getElementById('detailed-date');
+            const detailedTime = document.getElementById('detailed-time');
+            if (detailedDate) detailedDate.value = dateStr;
+            if (detailedTime) detailedTime.value = timeStr;
+        }
+
         // Start the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969832ac027e8087',t:'MTc1NDI0OTA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969841a855bec230',t:'MTc1NDI0OTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
